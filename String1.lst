@@ -1,0 +1,121 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/11/17 19:45:10
+String1.asm						     Page 1 - 1
+
+
+
+				;*************************************************************************************
+				; Program Name:  String1.asm
+				; Programmer:    Nick Sidaris
+				; Class:         CS1C
+				; Date:          April 11, 2017
+				; Purpose:
+				;        Define the methods for the String class
+				;
+					.486
+					.model flat
+					.stack 100h
+					
+					ascint32	PROTO Near32 stdcall, lpStringToConvert:dword 
+				 	intasc32	PROTO Near32 stdcall, lpStringToHold:dword, dval:dword
+					getstring	PROTO Near32 stdcall, lpStringToGet:dword, dlength:dword
+					putstring 	PROTO Near32 stdcall, lpStringToPrint:dword
+					memoryallocBailey PROTO Near32 stdcall, dNumBytes:dword  ;returns address ofmemory
+					;extern String_length:near32
+ 00000000			.data
+ 00000000  00000014 [		strInput	byte	20 dup(?)	
+	    00
+	   ]
+ 00000000				.code
+
+					
+				COMMENT %			;terminating symbol for the block is  								
+				 ****************************************************************************************
+				 * Name: String_length																	*
+				 * Purpose:																				*
+				 *		The purpose of the method is to determine the number of characters in a string	*
+				 *																						*
+				 * Date created: October 1, 2016														*
+				 * Date last modified: October 19, 2016													*
+				 *																						*
+				 * Notes on specifications, special algorithms, and assumptions:						*
+				 *   notes go here. Omit these lines if there is no special algorithm or there were no	*
+				 *   assumptions.																		*
+				 *																						*
+				 *   @param  lpString1:dword  															*
+				 *   @return len:dword  the length of a the string										*
+				 ***************************************************************************************%
+				;COMMENT %
+ 00000000			String_length	proc Near32
+ 00000000  55				push ebp					;preserve base register
+ 00000001  8B EC			mov ebp,esp					;set new stack frame
+ 00000003  53				push ebx					;preserve used registers
+ 00000004  56				push esi
+ 00000005  8B 5D 08			mov ebx,[ebp+8]				;ebx-> 1st string
+ 00000008  BE 00000000			mov esi,0					;esi indexes into the strings
+					
+ 0000000D			stLoop:
+ 0000000D  80 3C 1E 00				cmp byte ptr[ebx+esi],0	;reached the end of the string
+ 00000011  74 03				je finished				;if yes, done in here
+ 00000013  46					inc esi					;otherwise, continue to next character
+ 00000014  EB F7				jmp stLoop				;  until you hit the NULL character
+ 00000016			finished:
+
+ 00000016  8B C6			mov eax,esi					;returns the length in EAX
+ 00000018  5E				pop esi			;restore preserved registers
+ 00000019  5B				pop ebx
+ 0000001A  5D				pop ebp
+ 0000001B  C3				RET
+ 0000001C			String_length endp
+				 ; end of comment block
+					
+
+
+					end
+	
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/11/17 19:45:10
+String1.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00000100 Para	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000014 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000001C Para	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+String_length  . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Public
+  stLoop . . . . . . . . . . . .	L Near	 0000000D _TEXT	
+  finished . . . . . . . . . . .	L Near	 00000016 _TEXT	
+ascint32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+getstring  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+intasc32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+memoryallocBailey  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+putstring  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+strInput . . . . . . . . . . . .	Byte	 00000000 _DATA	
+
+	   0 Warnings
+	   0 Errors
