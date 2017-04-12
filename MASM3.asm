@@ -33,7 +33,7 @@ COMMA_KEY = 02Ch			;value for the Comma key
 ENTER_KEY = 13				;value for the enter key
 
 ; String Constant TESTVALS
-strTest1            byte  "Milk Steak", 0
+strTest1            byte  "Golden", 0
 strOutput           dword ?
 
 							;--- Insert test values here seperated with commas --- 

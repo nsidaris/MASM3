@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/11/17 19:45:10
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/11/17 21:28:03
 String1.asm						     Page 1 - 1
 
 
@@ -46,24 +46,26 @@ String1.asm						     Page 1 - 1
 				 ***************************************************************************************%
 				;COMMENT %
  00000000			String_length	proc Near32
- 00000000  55				push ebp					;preserve base register
- 00000001  8B EC			mov ebp,esp					;set new stack frame
- 00000003  53				push ebx					;preserve used registers
- 00000004  56				push esi
- 00000005  8B 5D 08			mov ebx,[ebp+8]				;ebx-> 1st string
- 00000008  BE 00000000			mov esi,0					;esi indexes into the strings
+					;push ebp					;preserve base register
+					;mov ebp,esp					;set new stack frame
+ 00000000  C8 0000 00			enter 0,0 
+ 00000004  53				push ebx					;preserve used registers
+ 00000005  56				push esi
+ 00000006  8B 5D 08			mov ebx,[ebp+8]				;ebx-> 1st string
+ 00000009  BE 00000000			mov esi,0					;esi indexes into the strings
 					
- 0000000D			stLoop:
- 0000000D  80 3C 1E 00				cmp byte ptr[ebx+esi],0	;reached the end of the string
- 00000011  74 03				je finished				;if yes, done in here
- 00000013  46					inc esi					;otherwise, continue to next character
- 00000014  EB F7				jmp stLoop				;  until you hit the NULL character
- 00000016			finished:
+ 0000000E			stLoop:
+ 0000000E  80 3C 1E 00				cmp byte ptr[ebx+esi],0	;reached the end of the string
+ 00000012  74 03				je finished				;if yes, done in here
+ 00000014  46					inc esi					;otherwise, continue to next character
+ 00000015  EB F7				jmp stLoop				;  until you hit the NULL character
+ 00000017			finished:
 
- 00000016  8B C6			mov eax,esi					;returns the length in EAX
- 00000018  5E				pop esi			;restore preserved registers
- 00000019  5B				pop ebx
- 0000001A  5D				pop ebp
+ 00000017  8B C6			mov eax,esi					;returns the length in EAX
+ 00000019  5E				pop esi			;restore preserved registers
+					;pop ebx
+					;pop ebp
+ 0000001A  C9				leave
  0000001B  C3				RET
  0000001C			String_length endp
 				 ; end of comment block
@@ -72,7 +74,7 @@ String1.asm						     Page 1 - 1
 
 					end
 	
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/11/17 19:45:10
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/11/17 21:28:03
 String1.asm						     Symbols 2 - 1
 
 
@@ -93,8 +95,8 @@ Procedures,  parameters and locals:
                 N a m e                 Type     Value    Attr
 
 String_length  . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Public
-  stLoop . . . . . . . . . . . .	L Near	 0000000D _TEXT	
-  finished . . . . . . . . . . .	L Near	 00000016 _TEXT	
+  stLoop . . . . . . . . . . . .	L Near	 0000000E _TEXT	
+  finished . . . . . . . . . . .	L Near	 00000017 _TEXT	
 ascint32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 getstring  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 intasc32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL

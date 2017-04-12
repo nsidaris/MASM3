@@ -40,8 +40,9 @@ COMMENT %			;terminating symbol for the block is
  ***************************************************************************************%
 ;COMMENT %
 String_length	proc Near32
-	push ebp					;preserve base register
-	mov ebp,esp					;set new stack frame
+	;push ebp					;preserve base register
+	;mov ebp,esp					;set new stack frame
+	enter 0,0 
 	push ebx					;preserve used registers
 	push esi
 	mov ebx,[ebp+8]				;ebx-> 1st string
@@ -56,8 +57,9 @@ finished:
 
 	mov eax,esi					;returns the length in EAX
 	pop esi			;restore preserved registers
-	pop ebx
-	pop ebp
+	;pop ebx
+	;pop ebp
+	leave
 	RET
 String_length endp
  ; end of comment block
