@@ -19,17 +19,18 @@
 	
 	.data
 strInput	byte	20 dup(?)	
+dInput dword ?
 	.code
 	
 COMMENT %			;terminating symbol for the block is  								
- ****************************************************************************************
- * Name: String_length																	*
- * Purpose:																				*
- *		Determine the number of characters in a string									*
- *																						*
- *   @param  lpString1:dword  															*
- *   @return length:dword  the length of a the string									*
- ***************************************************************************************%
+*****************************************************************************************
+* Name: String_length																	*
+* Purpose:																				*
+*		Determine the number of characters in a string									*
+*																						*
+*   @param  lpString1:dword  															*
+*   @return length:dword  the length of a the string									*
+****************************************************************************************%
 ;COMMENT %
 String_length	proc Near32
 	push ebp					;preserve base register
@@ -54,15 +55,15 @@ finished:
 String_length endp
 ;end of comment block
 
-COMMENT %			;terminating symbol for the block is  								
- ****************************************************************************************
- * Name: String_indexOf1																*
- * Purpose:																				*
- *		Returns the position in the string of the char value(if found)					*
- *																						*
- *   @param  lpString1:dword char:byte													*
- *   @return firstVal:dword  the position of the char value in the string(if found)		*
- ***************************************************************************************%	
+COMMENT %								
+*****************************************************************************************
+* Name: String_indexOf1																	*
+* Purpose:																				*
+*		Returns the position in the string of the char value(if found)					*
+*																						*
+*   @param  lpString1:dword char:byte													*
+*   @return lastVal:dword  the position of the char value in the string(if found)		*
+****************************************************************************************%	
 String_indexOf1 proc Near32
 	push ebp					;preserve base register
 	mov ebp,esp					;set new stack frame
@@ -91,24 +92,28 @@ exit:
 	RET	
 String_indexOf1 endp 
 
-COMMENT %			;terminating symbol for the block is  								
- ****************************************************************************************
- * Name: String_indexOf2																*
- * Purpose:																				*
- *		Returns the position in the string of the char value(if found), starting 		*
- *	from a specified index																*
- *																						*
- *   @param  lpString1:dword, char:byte, int:dword										*
- *   @return firstVal:dword  the position of the char value in the string(if found)		*
- ***************************************************************************************%	
+COMMENT %								
+*****************************************************************************************
+* Name: String_indexOf2																	*
+* Purpose:																				*
+*		Returns the position in the string of the char value(if found), starting 		*
+*	from a specified index																*
+*																						*
+*   @param  lpString1:dword, char:byte, int:dword										*
+*   @return firstVal:dword  the position of the char value in the string(if found)		*
+****************************************************************************************%	
 String_indexOf2 proc Near32
 	push ebp					;preserve base register
 	mov ebp,esp					;set new stack frame
 	push ebx					;preserve used registers
 	push esi
 	
-	call String_length	;get the length of the string(in eax)	
 	mov ebx,[ebp+8]		;string
+	
+	push ebx			;pushes the string, for string_length
+	call String_length	;get the length of the string (value in eax)
+	pop ebx				;pop ebx to fix the stack
+	
 	mov ax, [ebp+12]	;character
 	mov esi, [ebp+14]	;index
 	cmp esi, eax		;checks if given index is greater than the length of the string
@@ -132,16 +137,16 @@ exit:
 	RET	
 String_indexOf2 endp
 
-COMMENT %			;terminating symbol for the block is  								
- ****************************************************************************************
- * Name: String_indexOf3																*
- * Purpose:																				*
- *		Returns the position in the first string of the substring 					    *
- *	from a specified index																*
- *																						*
- *   @param  lpString1:dword, lpSubStr:dword											*
- *   @return firstVal:dword  the position of the string									*
- ***************************************************************************************%	
+COMMENT %									
+*****************************************************************************************
+* Name: String_indexOf3																	*
+* Purpose:																				*
+*		Returns the position in the first string of the substring 					    *
+*	from a specified index																*
+*																						*
+*   @param  lpString1:dword, lpSubStr:dword												*
+*   @return firstVal:dword  the position of the string									*
+****************************************************************************************%	
 String_indexOf3 proc Near32
 	push ebp					;preserve base register
 	mov ebp,esp					;set new stack frame
@@ -178,14 +183,14 @@ exit:
 String_indexOf3 endp
 
 COMMENT %
- ****************************************************************************************
- * Name: String_toLowerCase																*
- * Purpose:																				*
- *		Replaces any uppercase letter in a string with its lowercase verssion		    *
- *																						*
- *   @param  lpString1:dword															*
- *   @return nothing(passed string was edited)											*
- ***************************************************************************************%	
+*****************************************************************************************
+* Name: String_toLowerCase																*
+* Purpose:																				*
+*		Replaces any uppercase letter in a string with its lowercase verssion		    *
+*																						*
+*   @param  lpString1:dword																*
+*   @return lpString1:dword																*
+****************************************************************************************%	
 String_toLowerCase proc Near32
 	push ebp					;preserve base register
 	mov ebp,esp					;set new stack frame
@@ -218,14 +223,14 @@ finished:
 String_toLowerCase endp
 
 COMMENT %
- ****************************************************************************************
- * Name: String_toUpperCase																*
- * Purpose:																				*
- *		Replaces any lowercase letter in a string with its uppercase verssion		    *
- *																						*
- *   @param  lpString1:dword															*
- *   @return nothing(passed string was edited)											*
- ***************************************************************************************%	
+*****************************************************************************************
+* Name: String_toUpperCase																*
+* Purpose:																				*
+*		Replaces any lowercase letter in a string with its uppercase verssion		    *
+*																						*
+*   @param  lpString1:dword																*
+*   @return lpString1:dword																*
+****************************************************************************************%	
 String_toUpperCase proc Near32
 	push ebp					;preserve base register
 	mov ebp,esp					;set new stack frame
@@ -256,5 +261,162 @@ finished:
 	pop ebp
 	RET	
 String_toUpperCase endp
+
+COMMENT %								
+*****************************************************************************************
+* Name: String_concat																	*
+* Purpose:																				*
+*		Returns a concatanated string (String1+String)									*
+*																						*
+*   @param  lpString1:dword lpString2:dword												*
+*   @return lpString1:dword																*
+****************************************************************************************%
+String_concat proc Near32
+	push ebp					;preserve base register
+	mov ebp,esp					;set new stack frame
+	push ebx					;preserve used registers
+	push esi
 	
+	mov ebx,[ebp+8]		;string1
+	mov ax, [ebp+12]	;string2
+	call String_Length
+	
+	pop esi			;restore preserved registers
+	pop ebx
+	pop ebp
+	RET
+String_concat endp	
+
+COMMENT %								
+*****************************************************************************************
+* Name: String_replace																	*
+* Purpose:																				*
+*		Replaces all oldChars in string with NewChars									*
+*																						*
+*   @param  lpString1:dword oldChar:byte newChar:byte									*
+*   @return lpString1:dword																*
+****************************************************************************************%
+String_replace proc Near32
+	push ebp					;preserve base register
+	mov ebp,esp					;set new stack frame
+	push ebx					;preserve used registers
+	push esi
+	
+	mov ebx,[ebp+8]		;string
+	mov ax, [ebp+12]	;old char
+	mov cx, [ebp+14]	;new char
+	mov esi,0					;esi indexes into the strings	
+stLoop:
+	cmp byte ptr[ebx+esi],0	;checks if it has reached the end of a string
+	je finished				;if yes, exit
+	cmp byte ptr[ebx+esi], al
+	jne skip
+	mov byte ptr[ebx+esi], cl
+skip:
+	inc esi					;if not, go to the next character
+	jmp stLoop				;loops until you hit a NULL character
+		
+finished:
+	pop esi			;restore preserved registers
+	pop ebx
+	pop ebp
+	RET
+String_replace endp
+
+COMMENT %								
+*****************************************************************************************
+* Name: String_lastIndexOf1																*
+* Purpose:																				*
+*		Returns the last position in the string of the char value(if found)				*
+*																						*
+*   @param  lpString1:dword char:byte													*
+*   @return firstVal:dword  the position of the char value in the string(if found)		*
+****************************************************************************************%	
+String_lastIndexOf1 proc Near32
+	push ebp					;preserve base register
+	mov ebp,esp					;set new stack frame
+	push ebx					;preserve used registers
+	push esi
+	
+	mov ebx,[ebp+8]		;string
+	
+	push ebx
+	call String_Length
+	pop ebx
+	mov esi,eax
+	
+	;mov dInput, eax
+	;invoke intasc32, addr strInput, dInput
+	;invoke putstring, addr strInput
+	
+	mov ax, [ebp+12]	;character
+stLoop:
+	cmp esi,-1
+	je notFound
+	cmp byte ptr [ebx+esi], al	
+	je charFound	;char found
+	dec esi			;char not found
+	jmp stLoop
+charFound:
+	mov eax,esi		;stores index into eax
+	jmp exit
+	;mov dInput, esi
+	;invoke intasc32, addr strInput, dInput
+	;invoke putstring, addr strInput
+notFound:
+	mov eax,-1
+exit:
+	pop esi			;restore preserved registers
+	pop ebx
+	pop ebp
+	RET	
+String_lastIndexOf1 endp
+
+COMMENT %								
+*****************************************************************************************
+* Name: String_lastIndexOf2																*
+* Purpose:																				*
+*		Returns the lAST position in the string of the char value(if found), starting 	*
+*	from a specified index																*
+*																						*
+*   @param  lpString1:dword, char:byte, int:dword										*
+*   @return firstVal:dword  the position of the char value in the string(if found)		*
+****************************************************************************************%	
+String_lastIndexOf2 proc Near32
+	push ebp					;preserve base register
+	mov ebp,esp					;set new stack frame
+	push ebx					;preserve used registers
+	push esi
+	
+	mov ebx,[ebp+8]		;string
+	
+	push ebx			;pushes the string, for string_length
+	call String_length	;get the length of the string (value in eax)
+	pop ebx				;pop ebx to fix the stack
+	mov ecx,eax
+	
+	mov ax, [ebp+12]	;character
+	mov esi, [ebp+14]	;index
+	
+	cmp esi, ecx		;checks if given index is greater than the length of the string
+	jg charNotFound		;if index > length of string, exit
+stLoop:
+	cmp esi, -1		;checks for end of string	
+	je charNotFound
+	cmp byte ptr [ebx+esi], al	;compares char in string with the search char
+	je charFound	;char found
+	dec esi
+	jmp stLoop
+charFound:
+	mov eax,esi
+	jmp exit
+charNotFound:	
+	mov eax, -1
+exit:
+	pop esi			;restore preserved registers
+	pop ebx
+	pop ebp
+	RET	
+String_lastIndexOf2 endp
+
 end
