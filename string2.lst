@@ -1,0 +1,333 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/12/17 20:05:36
+string2.asm						     Page 1 - 1
+
+
+				;*************************************************************************************
+				; Program Name:  String2.asm
+				; Programmer:    Brenden Kentera
+				; Class:         CS 3B
+				; Date:          April 10, 2017
+				; Purpose:
+				;        Define the methods for the String class
+				;*************************************************************************************
+					.486
+					.model flat
+					.stack 100h
+					
+					ascint32	PROTO Near32 stdcall, lpStringToConvert:dword 
+				 	intasc32	PROTO Near32 stdcall, lpStringToHold:dword, dval:dword
+					getstring	PROTO Near32 stdcall, lpStringToGet:dword, dlength:dword
+					putstring 	PROTO Near32 stdcall, lpStringToPrint:dword
+					memoryallocBailey PROTO Near32 stdcall, dNumBytes:dword  ;returns address ofmemory
+					;extern String_length:near32	
+					
+ 00000000				.data
+ 00000000  00000014 [		strInput	byte	20 dup(?)	
+	    00
+	   ]
+ 00000000				.code
+					
+				COMMENT %			;terminating symbol for the block is  								
+				 ****************************************************************************************
+				 * Name: String_length																	*
+				 * Purpose:																				*
+				 *		Determine the number of characters in a string									*
+				 *																						*
+				 *   @param  lpString1:dword  															*
+				 *   @return length:dword  the length of a the string									*
+				 ***************************************************************************************%
+				;COMMENT %
+ 00000000			String_length	proc Near32
+ 00000000  55				push ebp					;preserve base register
+ 00000001  8B EC			mov ebp,esp					;set new stack frame
+ 00000003  53				push ebx					;preserve used registers
+ 00000004  56				push esi
+					
+ 00000005  8B 5D 08			mov ebx,[ebp+8]				;ebx-> 1st string
+ 00000008  BE 00000000			mov esi,0					;esi indexes into the strings	
+ 0000000D			stLoop:
+ 0000000D  80 3C 1E 00			cmp byte ptr[ebx+esi],0	;checks if it has reached the end of a string
+ 00000011  74 03			je finished				;if yes, exit
+ 00000013  46				inc esi					;if not, go to the next character
+ 00000014  EB F7			jmp stLoop				;loops until you hit a NULL character
+ 00000016			finished:
+ 00000016  8B C6			mov eax,esi					;returns the length in EAX
+					
+ 00000018  5E				pop esi			;restore preserved registers
+ 00000019  5B				pop ebx
+ 0000001A  5D				pop ebp
+ 0000001B  C3				RET
+ 0000001C			String_length endp
+				;end of comment block
+
+				COMMENT %			;terminating symbol for the block is  								
+				 ****************************************************************************************
+				 * Name: String_indexOf1																*
+				 * Purpose:																				*
+				 *		Returns the position in the string of the char value(if found)					*
+				 *																						*
+				 *   @param  lpString1:dword char:byte													*
+				 *   @return firstVal:dword  the position of the char value in the string(if found)		*
+				 ***************************************************************************************%	
+ 0000001C			String_indexOf1 proc Near32
+ 0000001C  55				push ebp					;preserve base register
+ 0000001D  8B EC			mov ebp,esp					;set new stack frame
+ 0000001F  53				push ebx					;preserve used registers
+ 00000020  56				push esi
+					
+ 00000021  8B 5D 08			mov ebx,[ebp+8]		;string
+ 00000024  66| 8B 45 0C			mov ax, [ebp+12]	;character
+ 00000028  BE 00000000			mov esi,0			;start searching from the start
+ 0000002D			stLoop:
+ 0000002D  80 3C 1E 00			cmp byte ptr [ebx+esi], 0	;checks for the end of the string
+ 00000031  74 0C			je charNotFound
+ 00000033  38 04 1E			cmp byte ptr [ebx+esi], al	;compares the char in the string with the search char
+ 00000036  74 03			je charFound	;char found
+ 00000038  46				inc esi			;char not found
+ 00000039  EB F2			jmp stLoop
+ 0000003B			charFound:
+ 0000003B  8B C6			mov eax,esi		;stores index into eax
+ 0000003D  EB 05			jmp exit
+ 0000003F			charNotFound:	
+ 0000003F  B8 FFFFFFFF			mov eax, -1
+ 00000044			exit:
+ 00000044  5E				pop esi			;restore preserved registers
+ 00000045  5B				pop ebx
+ 00000046  5D				pop ebp
+ 00000047  C3				RET	
+ 00000048			String_indexOf1 endp 
+
+				COMMENT %			;terminating symbol for the block is  								
+				 ****************************************************************************************
+				 * Name: String_indexOf2																*
+				 * Purpose:																				*
+				 *		Returns the position in the string of the char value(if found), starting 		*
+				 *	from a specified index																*
+				 *																						*
+				 *   @param  lpString1:dword, char:byte, int:dword										*
+				 *   @return firstVal:dword  the position of the char value in the string(if found)		*
+				 ***************************************************************************************%	
+ 00000048			String_indexOf2 proc Near32
+ 00000048  55				push ebp					;preserve base register
+ 00000049  8B EC			mov ebp,esp					;set new stack frame
+ 0000004B  53				push ebx					;preserve used registers
+ 0000004C  56				push esi
+					
+ 0000004D  E8 FFFFFFAE			call String_length	;get the length of the string(in eax)	
+ 00000052  8B 5D 08			mov ebx,[ebp+8]		;string
+ 00000055  66| 8B 45 0C			mov ax, [ebp+12]	;character
+ 00000059  8B 75 0E			mov esi, [ebp+14]	;index
+ 0000005C  3B F0			cmp esi, eax		;checks if given index is greater than the length of the string
+ 0000005E  7F 12			jg charNotFound		;if index > length of string, exit
+ 00000060			stLoop:
+ 00000060  80 3C 1E 00			cmp byte ptr [ebx+esi], 0	;checks for end of string	
+ 00000064  74 0C			je charNotFound
+ 00000066  38 04 1E			cmp byte ptr [ebx+esi], al	;compares char in string with the search char
+ 00000069  74 03			je charFound	;char found
+ 0000006B  46				inc esi
+ 0000006C  EB F2			jmp stLoop
+ 0000006E			charFound:
+ 0000006E  8B C6			mov eax,esi
+ 00000070  EB 05			jmp exit
+ 00000072			charNotFound:	
+ 00000072  B8 FFFFFFFF			mov eax, -1
+ 00000077			exit:
+ 00000077  5E				pop esi			;restore preserved registers
+ 00000078  5B				pop ebx
+ 00000079  5D				pop ebp
+ 0000007A  C3				RET	
+ 0000007B			String_indexOf2 endp
+
+				COMMENT %			;terminating symbol for the block is  								
+				 ****************************************************************************************
+				 * Name: String_indexOf3																*
+				 * Purpose:																				*
+				 *		Returns the position in the first string of the substring 					    *
+				 *	from a specified index																*
+				 *																						*
+				 *   @param  lpString1:dword, lpSubStr:dword											*
+				 *   @return firstVal:dword  the position of the string									*
+				 ***************************************************************************************%	
+ 0000007B			String_indexOf3 proc Near32
+ 0000007B  55				push ebp					;preserve base register
+ 0000007C  8B EC			mov ebp,esp					;set new stack frame
+ 0000007E  53				push ebx					;preserve used registers
+ 0000007F  56				push esi
+					
+ 00000080  8B 5D 08			mov ebx,[ebp+8]		;string
+ 00000083  8B 4D 0C			mov ecx,[ebp+12]	;substring
+ 00000086  BE 00000000			mov esi,0
+ 0000008B  B8 00000000			mov eax,0	
+				;stLoop:
+				;	mov edx,0
+				;	mov eax, esi
+				;subLoop:
+				;	cmp byte ptr [ebx+esi],0	;check end of string
+				;	je strEnd
+				;	mov dl, byte ptr[ebx+esi]	;store value at index of string
+				;	inc esi	
+				;	cmp byte ptr [ecx+edx],dl	;compare value in substring with stroed value form string
+				;	jne stLoop	;not equal, loops
+				;	inc edx
+				;	cmp byte ptr [ecx+edx],0	;checks for end of substring
+				;	je exit	;if substring ends exit
+				;	jmp subLoop	
+				;strEnd:
+				;	cmp byte ptr [ecx+edx],0
+				;	je exit
+				;	mov eax,-1
+ 00000090			exit:
+ 00000090  5E				pop esi			;restore preserved registers
+ 00000091  5B				pop ebx
+ 00000092  5D				pop ebp
+ 00000093  C3				RET	
+ 00000094			String_indexOf3 endp
+
+				COMMENT %
+				 ****************************************************************************************
+				 * Name: String_toLowerCase																*
+				 * Purpose:																				*
+				 *		Replaces any uppercase letter in a string with its lowercase verssion		    *
+				 *																						*
+				 *   @param  lpString1:dword															*
+				 *   @return nothing(passed string was edited)											*
+				 ***************************************************************************************%	
+ 00000094			String_toLowerCase proc Near32
+ 00000094  55				push ebp					;preserve base register
+ 00000095  8B EC			mov ebp,esp					;set new stack frame
+ 00000097  53				push ebx					;preserve used registers
+ 00000098  56				push esi
+					
+ 00000099  8B 5D 08			mov ebx,[ebp+8]		;string
+ 0000009C  BE 00000000			mov esi,0			;index for navigating the string	
+ 000000A1			stLoop:
+ 000000A1  80 3C 1E 00			cmp byte ptr[ebx+esi],0	;checks for the end of a string
+ 000000A5  74 17			je finished				;if yes, exit
+					
+ 000000A7  80 3C 1E 41			cmp byte ptr[ebx+esi],65	;checks lower bound for uppercase chars
+ 000000AB  7C 0E			jl reLoop
+ 000000AD  80 3C 1E 5A			cmp byte ptr[ebx+esi],90	;checks upper bound for uppercase chars
+ 000000B1  7F 08			jg reLoop
+					
+ 000000B3  8A 04 1E			mov al,byte ptr[ebx+esi]	;gets the value of the char in the string
+ 000000B6  04 20			add al,32					;sets it to its lowercase value
+ 000000B8  88 04 1E			mov byte ptr[ebx+esi],al	;stores the lowercase value back in the string
+ 000000BB			reLoop:
+ 000000BB  46				inc esi					;if not, go to the next character
+ 000000BC  EB E3			jmp stLoop				;loops until you hit a NULL character
+
+ 000000BE			finished:	
+ 000000BE  5E				pop esi			;restore preserved registers
+ 000000BF  5B				pop ebx
+ 000000C0  5D				pop ebp
+ 000000C1  C3				RET	
+ 000000C2			String_toLowerCase endp
+
+				COMMENT %
+				 ****************************************************************************************
+				 * Name: String_toUpperCase																*
+				 * Purpose:																				*
+				 *		Replaces any lowercase letter in a string with its uppercase verssion		    *
+				 *																						*
+				 *   @param  lpString1:dword															*
+				 *   @return nothing(passed string was edited)											*
+				 ***************************************************************************************%	
+ 000000C2			String_toUpperCase proc Near32
+ 000000C2  55				push ebp					;preserve base register
+ 000000C3  8B EC			mov ebp,esp					;set new stack frame
+ 000000C5  53				push ebx					;preserve used registers
+ 000000C6  56				push esi
+					
+ 000000C7  8B 5D 08			mov ebx,[ebp+8]		;string
+ 000000CA  BE 00000000			mov esi,0			;index for navigating the string	
+ 000000CF			stLoop:
+ 000000CF  80 3C 1E 00			cmp byte ptr[ebx+esi],0	;checks for the end of a string
+ 000000D3  74 17			je finished				;if yes, exit
+					
+ 000000D5  80 3C 1E 61			cmp byte ptr[ebx+esi],97	;checks lower bound for lowercase chars
+ 000000D9  7C 0E			jl reLoop
+ 000000DB  80 3C 1E 7A			cmp byte ptr[ebx+esi],122	;checks upper bound for lowercase chars
+ 000000DF  7F 08			jg reLoop
+					
+ 000000E1  8A 04 1E			mov al,byte ptr[ebx+esi]	;gets the value of the char in the string
+ 000000E4  2C 20			sub al,32					;sets it to its uppercase value
+ 000000E6  88 04 1E			mov byte ptr[ebx+esi],al	;stores the uppercase value back in the string
+ 000000E9			reLoop:
+ 000000E9  46				inc esi					;if not, go to the next character
+ 000000EA  EB E3			jmp stLoop				;loops until you hit a NULL character
+
+ 000000EC			finished:	
+ 000000EC  5E				pop esi			;restore preserved registers
+ 000000ED  5B				pop ebx
+ 000000EE  5D				pop ebp
+ 000000EF  C3				RET	
+ 000000F0			String_toUpperCase endp
+					
+				end
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/12/17 20:05:36
+string2.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+FLAT . . . . . . . . . . . . . .	GROUP
+STACK  . . . . . . . . . . . . .	32 Bit	 00000100 Para	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000014 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000F0 Para	  Public  'CODE'	
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+String_indexOf1  . . . . . . . .	P Near	 0000001C _TEXT	Length= 0000002C Public
+  stLoop . . . . . . . . . . . .	L Near	 0000002D _TEXT	
+  charFound  . . . . . . . . . .	L Near	 0000003B _TEXT	
+  charNotFound . . . . . . . . .	L Near	 0000003F _TEXT	
+  exit . . . . . . . . . . . . .	L Near	 00000044 _TEXT	
+String_indexOf2  . . . . . . . .	P Near	 00000048 _TEXT	Length= 00000033 Public
+  stLoop . . . . . . . . . . . .	L Near	 00000060 _TEXT	
+  charFound  . . . . . . . . . .	L Near	 0000006E _TEXT	
+  charNotFound . . . . . . . . .	L Near	 00000072 _TEXT	
+  exit . . . . . . . . . . . . .	L Near	 00000077 _TEXT	
+String_indexOf3  . . . . . . . .	P Near	 0000007B _TEXT	Length= 00000019 Public
+  exit . . . . . . . . . . . . .	L Near	 00000090 _TEXT	
+String_length  . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Public
+  stLoop . . . . . . . . . . . .	L Near	 0000000D _TEXT	
+  finished . . . . . . . . . . .	L Near	 00000016 _TEXT	
+String_toLowerCase . . . . . . .	P Near	 00000094 _TEXT	Length= 0000002E Public
+  stLoop . . . . . . . . . . . .	L Near	 000000A1 _TEXT	
+  reLoop . . . . . . . . . . . .	L Near	 000000BB _TEXT	
+  finished . . . . . . . . . . .	L Near	 000000BE _TEXT	
+String_toUpperCase . . . . . . .	P Near	 000000C2 _TEXT	Length= 0000002E Public
+  stLoop . . . . . . . . . . . .	L Near	 000000CF _TEXT	
+  reLoop . . . . . . . . . . . .	L Near	 000000E9 _TEXT	
+  finished . . . . . . . . . . .	L Near	 000000EC _TEXT	
+ascint32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+getstring  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+intasc32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+memoryallocBailey  . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+putstring  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 00000000h   
+@DataSize  . . . . . . . . . . .	Number	 00000000h   
+@Interface . . . . . . . . . . .	Number	 00000000h   
+@Model . . . . . . . . . . . . .	Number	 00000007h   
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 FLAT
+@fardata?  . . . . . . . . . . .	Text   	 FLAT
+@fardata . . . . . . . . . . . .	Text   	 FLAT
+@stack . . . . . . . . . . . . .	Text   	 FLAT
+strInput . . . . . . . . . . . .	Byte	 00000000 _DATA	
+
+	   0 Warnings
+	   0 Errors
