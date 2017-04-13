@@ -21,9 +21,10 @@
 	putstring 	PROTO Near32 stdcall, lpStringToPrint:dword
 	getstring 	PROTO Near32 stdcall, lpStringToGet:dword,	dLength:dword
 	hexToChar 	PROTO Near32 stdcall, lpDestStr:dword,lpSourceStr:dword,dLen:dword
-	
+	memoryallocBailey PROTO Near32 stdcall, dNumBytes:dword  ;returns address ofmemory
 ; Methods from string1.asm
 	EXTERN String_length:PROC
+	EXTERN String_equals:PROC
 	
 	
 	.data
@@ -34,6 +35,7 @@ ENTER_KEY = 13				;value for the enter key
 
 ; String Constant TESTVALS
 strTest1            byte  "Golden", 0
+strTest2            byte  "Golden", 0
 strOutput           dword ?
 
 							;--- Insert test values here seperated with commas --- 
@@ -114,6 +116,7 @@ _start:								 ;Entry point in program
 	
 ; Run Tests and Report
 	call TestString_length			 ;Tests and Reports for String_Length method
+	call TestString_equals
 
 	
 ; Exit Program
@@ -135,8 +138,8 @@ TestString_length PROC USES EAX ECX ESI EDI
 	
 	INVOKE putstring, ADDR strInfoTestStrLength	;Display Test INFO
 ; Initialize Test
-	lea ESI, strTestVals					;ESI = strTestVals address
-	mov ECX, iTestValsLength				;ECX = length of strTestVals
+	;lea ESI, strTestVals					;ESI = strTestVals address
+	;mov ECX, iTestValsLength				;ECX = length of strTestVals
 
 
 ; Call method
@@ -154,6 +157,25 @@ TestString_length PROC USES EAX ECX ESI EDI
 	ret										;return
 
 TestString_length ENDP
+
+
+TestString_equals PROC USES EAX ECX ESI EDI
+
+	Invoke putString , ADDR strInfoTestStrEquals
+	push OFFSET strTest2   ;push last parameter first 
+	push OFFSET strTest1
+	call String_equals
+	add ESP, 8
+	mov [dReturnedVal],EAX	
+	
+	;Invoke putString, EAX
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+	ret
+
+TestString_equals ENDP
 
 
 

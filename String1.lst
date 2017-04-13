@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/11/17 21:28:03
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/12/17 18:56:05
 String1.asm						     Page 1 - 1
 
 
@@ -25,6 +25,8 @@ String1.asm						     Page 1 - 1
  00000000  00000014 [		strInput	byte	20 dup(?)	
 	    00
 	   ]
+ 00000014 0A 00			strNewline 	        byte 10,0 ;newline constant
+ 00000016 00000000		strOutput dword ?
  00000000				.code
 
 					
@@ -46,35 +48,121 @@ String1.asm						     Page 1 - 1
 				 ***************************************************************************************%
 				;COMMENT %
  00000000			String_length	proc Near32
-					;push ebp					;preserve base register
-					;mov ebp,esp					;set new stack frame
- 00000000  C8 0000 00			enter 0,0 
- 00000004  53				push ebx					;preserve used registers
- 00000005  56				push esi
- 00000006  8B 5D 08			mov ebx,[ebp+8]				;ebx-> 1st string
- 00000009  BE 00000000			mov esi,0					;esi indexes into the strings
+ 00000000  55				push ebp					;preserve base register
+ 00000001  8B EC			mov ebp,esp					;set new stack frame
+					;enter 0,0 
+ 00000003  53				push ebx					;preserve used registers
+ 00000004  56				push esi
+ 00000005  8B 5D 08			mov ebx,[ebp+8]				;ebx-> 1st string
+ 00000008  BE 00000000			mov esi,0					;esi indexes into the strings
 					
- 0000000E			stLoop:
- 0000000E  80 3C 1E 00				cmp byte ptr[ebx+esi],0	;reached the end of the string
- 00000012  74 03				je finished				;if yes, done in here
- 00000014  46					inc esi					;otherwise, continue to next character
- 00000015  EB F7				jmp stLoop				;  until you hit the NULL character
- 00000017			finished:
+ 0000000D			stLoop:
+ 0000000D  80 3C 1E 00				cmp byte ptr[ebx+esi],0	;reached the end of the string
+ 00000011  74 03				je finished				;if yes, done in here
+ 00000013  46					inc esi					;otherwise, continue to next character
+ 00000014  EB F7				jmp stLoop				;  until you hit the NULL character
+ 00000016			finished:
 
- 00000017  8B C6			mov eax,esi					;returns the length in EAX
- 00000019  5E				pop esi			;restore preserved registers
-					;pop ebx
-					;pop ebp
- 0000001A  C9				leave
+ 00000016  8B C6			mov eax,esi					;returns the length in EAX
+ 00000018  5E				pop esi			;restore preserved registers
+ 00000019  5B				pop ebx
+ 0000001A  5D				pop ebp
+					;leave
  0000001B  C3				RET
  0000001C			String_length endp
 				 ; end of comment block
+
+				 COMMENT %			;terminating symbol for the block is  								
+				 ****************************************************************************************
+				 * Name: String_equals																*
+				 * Purpose:																				*
+				 *		See if 2 strings are equal                                                  	*
+				 *																						*
+				 * Date created: October 1, 2016														*
+				 * Date last modified: October 19, 2016													*
+				 *																						*
+				 * Notes on specifications, special algorithms, and assumptions:						*
+				 *   notes go here. Omit these lines if there is no special algorithm or there were no	*
+				 *   assumptions.																		*
+				 *																						*
+				 *   @param  lpString1:dword  															*
+				 *   @return len:dword  the length of a the string										*
+				 ***************************************************************************************%
+ 0000001C			String_equals  proc Near32
+
+				;enter 0,0  ;start method - EBP is now the stack frame
+ 0000001C  55				push ebp					;preserve base register
+ 0000001D  8B EC			mov ebp,esp	
+ 0000001F  53				push ebx 
+ 00000020  51				push ecx   ;saving registers
+ 00000021  56				push esi
+ 00000022  52				push edx 
+					
+ 00000023  FF 75 08			push [ebp + 8]     ;push first string onto stack(ebp + 4 is return address )
+ 00000026  E8 FFFFFFD5			call String_length 
+ 0000002B  8B D8			mov ebx, eax   ;save the length
+					;Invoke intasc32, ADDR strOutput, EBX
+					;Invoke putString, ADDR strNewline
+					;Invoke putstring, ADDR strOutput
+					
+ 0000002D  FF 75 0C			push [ebp + 12] ; push second string onto stack
+ 00000030  E8 FFFFFFCB			call String_length
+ 00000035  8B D0			mov edx, eax
+					;Invoke intasc32, ADDR strOutput, EDX
+					;Invoke putString, ADDR strNewline
+					;Invoke putstring, ADDR strOutput
+					
+ 00000037  3B DA			cmp ebx, edx
+ 00000039  74 10			je  EvenLength
+ 0000003B  75 00			jne UnevenLength
+					
 					
 
+					
+ 0000003D			UnevenLength:
+ 0000003D  B8 00000000			mov eax, 0
+ 00000042  EB 25			jmp finish
+					
+ 00000044			equalStrings:
 
+ 00000044  B8 00000001			mov eax, 1
+ 00000049  EB 1E			jmp finish
+ 0000004B			EvenLength:
+ 0000004B  8B CA			mov ecx, edx         ;use to store length of the strings and serve as upper loop boundary
+ 0000004D  8B 55 08			mov edx, [ebp + 8]   ;store string 1
+ 00000050  8B 5D 0C			mov ebx, [ebp + 12]  ;store string 2
+ 00000053  BE 00000000			mov esi, 0
+					
+ 00000058			checkChar:
+ 00000058  8A 04 16			mov al, [edx + esi]
+ 0000005B  8A 24 1E			mov ah, [ebx + esi]
+ 0000005E  38 C4			cmp ah, al
+ 00000060  75 DB			jne UnevenLength
+ 00000062  46				inc ESI
+ 00000063  3B F1			cmp esi, ecx ; we have reached the end of the string and they are the same at this point
+ 00000065  74 DD			je equalStrings
+ 00000067  75 EF			jne checkChar
+					
+
+					
+ 00000069			finish:
+ 00000069  5A				pop edx
+ 0000006A  5E				pop esi ;restore registers
+ 0000006B  59				pop ecx
+ 0000006C  5B				pop ebx
+
+					
+ 0000006D  83 C4 08			add esp, 8
+ 00000070  5D				pop ebp	
+
+					
+					;leave      ;Finish method
+ 00000071  C3				RET
+
+ 00000072			String_equals endp
 					end
 	
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/11/17 21:28:03
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/12/17 18:56:05
 String1.asm						     Symbols 2 - 1
 
 
@@ -86,17 +174,23 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00000100 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 00000014 Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 0000001C Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 0000001A Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000072 Para	  Public  'CODE'	
 
 
 Procedures,  parameters and locals:
 
                 N a m e                 Type     Value    Attr
 
+String_equals  . . . . . . . . .	P Near	 0000001C _TEXT	Length= 00000056 Public
+  UnevenLength . . . . . . . . .	L Near	 0000003D _TEXT	
+  equalStrings . . . . . . . . .	L Near	 00000044 _TEXT	
+  EvenLength . . . . . . . . . .	L Near	 0000004B _TEXT	
+  checkChar  . . . . . . . . . .	L Near	 00000058 _TEXT	
+  finish . . . . . . . . . . . .	L Near	 00000069 _TEXT	
 String_length  . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Public
-  stLoop . . . . . . . . . . . .	L Near	 0000000E _TEXT	
-  finished . . . . . . . . . . .	L Near	 00000017 _TEXT	
+  stLoop . . . . . . . . . . . .	L Near	 0000000D _TEXT	
+  finished . . . . . . . . . . .	L Near	 00000016 _TEXT	
 ascint32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 getstring  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 intasc32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -118,6 +212,8 @@ Symbols:
 @fardata . . . . . . . . . . . .	Text   	 FLAT
 @stack . . . . . . . . . . . . .	Text   	 FLAT
 strInput . . . . . . . . . . . .	Byte	 00000000 _DATA	
+strNewline . . . . . . . . . . .	Byte	 00000014 _DATA	
+strOutput  . . . . . . . . . . .	DWord	 00000016 _DATA	
 
 	   0 Warnings
 	   0 Errors
