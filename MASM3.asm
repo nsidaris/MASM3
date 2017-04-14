@@ -25,6 +25,7 @@
 ; Methods from string1.asm
 	EXTERN String_length:PROC
 	EXTERN String_equals:PROC
+	EXTERN String_equalsIgnoreCase: PROC
 	
 	
 	.data
@@ -35,7 +36,7 @@ ENTER_KEY = 13				;value for the enter key
 
 ; String Constant TESTVALS
 strTest1            byte  "Golden", 0
-strTest2            byte  "Golden", 0
+strTest2            byte  "gOlden", 0
 strOutput           dword ?
 
 							;--- Insert test values here seperated with commas --- 
@@ -164,7 +165,7 @@ TestString_equals PROC USES EAX ECX ESI EDI
 	Invoke putString , ADDR strInfoTestStrEquals
 	push OFFSET strTest2   ;push last parameter first 
 	push OFFSET strTest1
-	call String_equals
+	call String_equalsIgnoreCase
 	add ESP, 8
 	mov [dReturnedVal],EAX	
 	

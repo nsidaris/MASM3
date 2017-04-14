@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/12/17 18:56:05
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/13/17 23:16:48
 String1.asm						     Page 1 - 1
 
 
@@ -27,6 +27,23 @@ String1.asm						     Page 1 - 1
 	   ]
  00000014 0A 00			strNewline 	        byte 10,0 ;newline constant
  00000016 00000000		strOutput dword ?
+
+
+ 0000001A 0D 0A 50 61 72	strTest1 byte 13,10,  "Parsing something for word 1", 13,10,  0
+	   73 69 6E 67 20
+	   73 6F 6D 65 74
+	   68 69 6E 67 20
+	   66 6F 72 20 77
+	   6F 72 64 20 31
+	   0D 0A 00
+ 0000003B 0D 0A 50 61 72	strTest2 byte 13,10, "Parsing something for word 2", 13,10,  0
+	   73 69 6E 67 20
+	   73 6F 6D 65 74
+	   68 69 6E 67 20
+	   66 6F 72 20 77
+	   6F 72 64 20 32
+	   0D 0A 00
+
  00000000				.code
 
 					
@@ -38,10 +55,7 @@ String1.asm						     Page 1 - 1
 				 *																						*
 				 * Date created: October 1, 2016														*
 				 * Date last modified: October 19, 2016													*
-				 *																						*
-				 * Notes on specifications, special algorithms, and assumptions:						*
-				 *   notes go here. Omit these lines if there is no special algorithm or there were no	*
-				 *   assumptions.																		*
+				 *																						*																	*
 				 *																						*
 				 *   @param  lpString1:dword  															*
 				 *   @return len:dword  the length of a the string										*
@@ -74,7 +88,7 @@ String1.asm						     Page 1 - 1
 
 				 COMMENT %			;terminating symbol for the block is  								
 				 ****************************************************************************************
-				 * Name: String_equals																*
+				 * Name: String_equals																    *
 				 * Purpose:																				*
 				 *		See if 2 strings are equal                                                  	*
 				 *																						*
@@ -85,14 +99,14 @@ String1.asm						     Page 1 - 1
 				 *   notes go here. Omit these lines if there is no special algorithm or there were no	*
 				 *   assumptions.																		*
 				 *																						*
-				 *   @param  lpString1:dword  															*
-				 *   @return len:dword  the length of a the string										*
+				 *   @param  lpString1:dword, lpString2:dword  											*
+				 *   @return equal:byte  whether or not the strings are equal							*
 				 ***************************************************************************************%
  0000001C			String_equals  proc Near32
 
 				;enter 0,0  ;start method - EBP is now the stack frame
  0000001C  55				push ebp					;preserve base register
- 0000001D  8B EC			mov ebp,esp	
+ 0000001D  8B EC			mov ebp,esp	      ; new stack frame
  0000001F  53				push ebx 
  00000020  51				push ecx   ;saving registers
  00000021  56				push esi
@@ -101,24 +115,16 @@ String1.asm						     Page 1 - 1
  00000023  FF 75 08			push [ebp + 8]     ;push first string onto stack(ebp + 4 is return address )
  00000026  E8 FFFFFFD5			call String_length 
  0000002B  8B D8			mov ebx, eax   ;save the length
-					;Invoke intasc32, ADDR strOutput, EBX
-					;Invoke putString, ADDR strNewline
-					;Invoke putstring, ADDR strOutput
+
 					
  0000002D  FF 75 0C			push [ebp + 12] ; push second string onto stack
  00000030  E8 FFFFFFCB			call String_length
  00000035  8B D0			mov edx, eax
-					;Invoke intasc32, ADDR strOutput, EDX
-					;Invoke putString, ADDR strNewline
-					;Invoke putstring, ADDR strOutput
 					
  00000037  3B DA			cmp ebx, edx
  00000039  74 10			je  EvenLength
  0000003B  75 00			jne UnevenLength
-					
-					
-
-					
+				; accounts for uneven length or character mismatch
  0000003D			UnevenLength:
  0000003D  B8 00000000			mov eax, 0
  00000042  EB 25			jmp finish
@@ -134,7 +140,7 @@ String1.asm						     Page 1 - 1
  00000053  BE 00000000			mov esi, 0
 					
  00000058			checkChar:
- 00000058  8A 04 16			mov al, [edx + esi]
+ 00000058  8A 04 16	mov al, [edx + esi]
  0000005B  8A 24 1E			mov ah, [ebx + esi]
  0000005E  38 C4			cmp ah, al
  00000060  75 DB			jne UnevenLength
@@ -160,9 +166,108 @@ String1.asm						     Page 1 - 1
  00000071  C3				RET
 
  00000072			String_equals endp
-					end
-	
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/12/17 18:56:05
+
+					
+ 00000072			String_equalsIgnoreCase proc Near32
+
+				;enter 0,0  ;start method - EBP is now the stack frame
+ 00000072  55				push ebp					;preserve base register
+ 00000073  8B EC			mov ebp,esp	      ; new stack frame
+ 00000075  53				push ebx 
+ 00000076  51				push ecx   ;saving registers
+ 00000077  56				push esi
+ 00000078  52				push edx 
+					
+ 00000079  FF 75 08			push [ebp + 8]     ;push first string onto stack(ebp + 4 is return address )
+ 0000007C  E8 FFFFFF7F			call String_length 
+ 00000081  8B D8			mov ebx, eax   ;save the length
+
+					
+ 00000083  FF 75 0C			push [ebp + 12] ; push second string onto stack
+ 00000086  E8 FFFFFF75			call String_length
+ 0000008B  8B D0			mov edx, eax
+					
+ 0000008D  3B DA			cmp ebx, edx
+ 0000008F  74 10			je  EvenLength
+ 00000091  75 00			jne UnevenLength
+				; accounts for uneven length or character mismatch
+ 00000093			UnevenLength:
+ 00000093  B8 00000000			mov eax, 0
+ 00000098  EB 50			jmp finish
+					
+ 0000009A			equalStrings:
+
+ 0000009A  B8 00000001			mov eax, 1
+ 0000009F  EB 49			jmp finish
+ 000000A1			EvenLength:
+ 000000A1  8B CA			mov ecx, edx         ;use to store length of the strings and serve as upper loop boundary
+ 000000A3  8B 55 08			mov edx, [ebp + 8]   ;store string 1
+ 000000A6  8B 5D 0C			mov ebx, [ebp + 12]  ;store string 2
+ 000000A9  BE 00000000			mov esi, 0
+					
+ 000000AE			checkChar1:
+ 000000AE  8A 04 16			mov al, [edx + esi]
+
+ 000000B1			lower1:
+ 000000B1  3C 40			cmp al, 64
+ 000000B3  7C 10			jl checkChar2
+ 000000B5  3C 5B			cmp al, 91
+ 000000B7  7F 0C			jg checkChar2
+					
+					Invoke putString, ADDR strTest1
+ 000000C3  04 20			add al, 32
+
+ 000000C5			checkChar2:
+ 000000C5  8A 24 1E			mov ah, [ebx + esi]
+ 000000C8			lower2:
+ 000000C8  80 FC 40			cmp ah, 64
+ 000000CB  7C 12			jl compare
+ 000000CD  80 FC 5B			cmp ah, 91
+ 000000D0  7F 0D			jg compare
+
+					Invoke putString, ADDR strTest2
+ 000000DC  80 C4 20			add ah, 32
+ 000000DF			compare:	
+					
+					
+					
+					
+ 000000DF  38 C4			cmp ah, al
+ 000000E1  75 B0			jne UnevenLength
+ 000000E3  46				inc ESI
+ 000000E4  3B F1			cmp esi, ecx ; we have reached the end of the string and they are the same at this point
+ 000000E6  74 B2			je equalStrings
+ 000000E8  75 C4			jne checkChar1
+					
+
+					
+ 000000EA			finish:
+ 000000EA  5A				pop edx
+ 000000EB  5E				pop esi ;restore registers
+ 000000EC  59				pop ecx
+ 000000ED  5B				pop ebx
+
+					
+ 000000EE  83 C4 08			add esp, 8
+ 000000F1  5D				pop ebp	
+
+					
+					;leave      ;Finish method
+ 000000F2  C3				RET
+					
+					
+ 000000F3			parse1:
+
+ 000000F3  EB D0			jmp checkChar2
+
+
+ 000000F5			parse2:
+
+ 000000F5  EB E8			jmp compare
+					
+ 000000F7			String_equalsIgnoreCase endp	
+				end
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/13/17 23:16:48
 String1.asm						     Symbols 2 - 1
 
 
@@ -174,14 +279,26 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00000100 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 0000001A Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000072 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 0000005C Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 000000F7 Para	  Public  'CODE'	
 
 
 Procedures,  parameters and locals:
 
                 N a m e                 Type     Value    Attr
 
+String_equalsIgnoreCase  . . . .	P Near	 00000072 _TEXT	Length= 00000085 Public
+  UnevenLength . . . . . . . . .	L Near	 00000093 _TEXT	
+  equalStrings . . . . . . . . .	L Near	 0000009A _TEXT	
+  EvenLength . . . . . . . . . .	L Near	 000000A1 _TEXT	
+  checkChar1 . . . . . . . . . .	L Near	 000000AE _TEXT	
+  lower1 . . . . . . . . . . . .	L Near	 000000B1 _TEXT	
+  checkChar2 . . . . . . . . . .	L Near	 000000C5 _TEXT	
+  lower2 . . . . . . . . . . . .	L Near	 000000C8 _TEXT	
+  compare  . . . . . . . . . . .	L Near	 000000DF _TEXT	
+  finish . . . . . . . . . . . .	L Near	 000000EA _TEXT	
+  parse1 . . . . . . . . . . . .	L Near	 000000F3 _TEXT	
+  parse2 . . . . . . . . . . . .	L Near	 000000F5 _TEXT	
 String_equals  . . . . . . . . .	P Near	 0000001C _TEXT	Length= 00000056 Public
   UnevenLength . . . . . . . . .	L Near	 0000003D _TEXT	
   equalStrings . . . . . . . . .	L Near	 00000044 _TEXT	
@@ -214,6 +331,8 @@ Symbols:
 strInput . . . . . . . . . . . .	Byte	 00000000 _DATA	
 strNewline . . . . . . . . . . .	Byte	 00000014 _DATA	
 strOutput  . . . . . . . . . . .	DWord	 00000016 _DATA	
+strTest1 . . . . . . . . . . . .	Byte	 0000001A _DATA	
+strTest2 . . . . . . . . . . . .	Byte	 0000003B _DATA	
 
 	   0 Warnings
 	   0 Errors

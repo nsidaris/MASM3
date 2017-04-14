@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/12/17 18:56:05
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/13/17 23:16:48
 MASM3.asm						     Page 1 - 1
 
 
@@ -29,6 +29,7 @@ MASM3.asm						     Page 1 - 1
 				; Methods from string1.asm
 					EXTERN String_length:PROC
 					EXTERN String_equals:PROC
+					EXTERN String_equalsIgnoreCase: PROC
 					
 					
  00000000				.data
@@ -40,7 +41,7 @@ MASM3.asm						     Page 1 - 1
 				; String Constant TESTVALS
  00000000 47 6F 6C 64 65	strTest1            byte  "Golden", 0
 	   6E 00
- 00000007 47 6F 6C 64 65	strTest2            byte  "Golden", 0
+ 00000007 67 4F 6C 64 65	strTest2            byte  "gOlden", 0
 	   6E 00
  0000000E 00000000		strOutput           dword ?
 
@@ -461,7 +462,7 @@ MASM3.asm						     Page 1 - 1
 					Invoke putString , ADDR strInfoTestStrEquals
  00000075  68 00000007 R		push OFFSET strTest2   ;push last parameter first 
  0000007A  68 00000000 R		push OFFSET strTest1
- 0000007F  E8 00000000 E		call String_equals
+ 0000007F  E8 00000000 E		call String_equalsIgnoreCase
  00000084  83 C4 08			add ESP, 8
  00000087  A3 00000099 R		mov [dReturnedVal],EAX	
 					
@@ -498,7 +499,7 @@ MASM3.asm						     Page 1 - 1
  000000D5			ExitProgram ENDP							;END ExitProgram
 
 				END											;END CODE
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/12/17 18:56:05
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/13/17 23:16:48
 MASM3.asm						     Symbols 2 - 1
 
 
@@ -550,6 +551,7 @@ Symbols:
 COMMA_KEY  . . . . . . . . . . .	Number	 0000002Ch   
 ENTER_KEY  . . . . . . . . . . .	Number	 0000000Dh   
 STR_MAX  . . . . . . . . . . . .	Number	 0000001Eh   
+String_equalsIgnoreCase  . . . .	L Near	 00000000 FLAT	External
 String_equals  . . . . . . . . .	L Near	 00000000 FLAT	External
 String_length  . . . . . . . . .	L Near	 00000000 FLAT	External
 _start . . . . . . . . . . . . .	L Near	 00000000 _TEXT	Public
