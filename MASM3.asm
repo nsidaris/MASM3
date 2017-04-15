@@ -26,6 +26,7 @@
 	EXTERN String_length:PROC
 	EXTERN String_equals:PROC
 	EXTERN String_equalsIgnoreCase: PROC
+	EXTERN String_copy: PROC
 	
 	
 	.data
@@ -118,6 +119,8 @@ _start:								 ;Entry point in program
 ; Run Tests and Report
 	call TestString_length			 ;Tests and Reports for String_Length method
 	call TestString_equals
+	call TestString_equalsIgnoreCase
+	call TestString_copy
 
 	
 ; Exit Program
@@ -165,7 +168,7 @@ TestString_equals PROC USES EAX ECX ESI EDI
 	Invoke putString , ADDR strInfoTestStrEquals
 	push OFFSET strTest2   ;push last parameter first 
 	push OFFSET strTest1
-	call String_equalsIgnoreCase
+	call String_equals
 	add ESP, 8
 	mov [dReturnedVal],EAX	
 	
@@ -181,9 +184,47 @@ TestString_equals ENDP
 
 
 
+TestString_equalsIgnoreCase PROC USES EAX ECX ESI EDI
 
 
 
+Invoke putString , ADDR strInfoTestEqualsIC
+	push OFFSET strTest2   ;push last parameter first 
+	push OFFSET strTest1
+	call String_equalsIgnoreCase
+	add ESP, 8
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+	ret
+
+
+
+
+TestString_equalsIgnoreCase ENDP
+
+
+
+
+TestString_copy PROC USES EAX ECX ESI EDI
+
+	Invoke putString, ADDR strInfoTestStrCopy
+	push OFFSET strTest1
+	call String_copy
+	add esp, 4
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke putString, [dReturnedVal]
+
+
+	
+	ret
+TestString_copy ENDP
 
 COMMENT %
 *******************************************************************************************

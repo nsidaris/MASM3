@@ -149,7 +149,26 @@ finish:
 
 String_equals endp
 
-	
+
+ COMMENT %			;terminating symbol for the block is  								
+ ****************************************************************************************
+ * Name: String_equals																    *
+ * Purpose:																				*
+ *		See if 2 strings are equal                                                  	*
+ *																						*
+ * Date created: October 1, 2016														*
+ * Date last modified: October 19, 2016													*
+ *																						*
+ * Notes on specifications, special algorithms, and assumptions:						*
+ *   notes go here. Omit these lines if there is no special algorithm or there were no	*
+ *   assumptions.																		*
+ *																						*
+ *   @param  lpString1:dword, lpString2:dword  											*
+ *   @return equal:byte  whether or not the strings are equal							*
+ ***************************************************************************************%
+
+
+
 String_equalsIgnoreCase proc Near32
 
 ;enter 0,0  ;start method - EBP is now the stack frame
@@ -209,11 +228,7 @@ lower2:
 
 	;Invoke putString, ADDR strTest2
 	add ah, 32
-compare:	
-	
-	
-	
-	
+compare:	;
 	cmp ah, al
 	jne UnevenLength
 	inc ESI
@@ -238,14 +253,52 @@ finish:
 	RET
 	
 	
-parse1:
-
-	jmp checkChar2
-
-
-parse2:
-
-	jmp compare
-	
 String_equalsIgnoreCase endp	
+
+
+String_copy proc Near32
+
+	push ebp					;preserve base register
+	mov ebp,esp	      ; new stack frame
+	push ebx 
+	push ecx   ;saving registers
+	push esi
+	push edx 
+	
+
+	push [ebp + 8] ;push the string to the stack
+	call String_length 
+	mov ecx, eax   ;save the length of the string
+	add esp, 4
+	add ecx, 1
+	
+	Invoke memoryallocBailey, ecx
+	mov esi, 0
+	
+	mov ebx, [ebp + 8]
+	mov edx, eax
+buildString:
+	
+	mov al, [ebx + esi]
+	mov [EDX + ESI], al
+	inc esi
+	loop buildString
+	
+		
+	
+	mov eax, edx
+	pop edx
+	
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	RET
+
+String_copy endp
+
+
+
+
 end

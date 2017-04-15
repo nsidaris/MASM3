@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/13/17 23:16:48
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/15/17 13:56:34
 MASM3.asm						     Page 1 - 1
 
 
@@ -30,6 +30,7 @@ MASM3.asm						     Page 1 - 1
 					EXTERN String_length:PROC
 					EXTERN String_equals:PROC
 					EXTERN String_equalsIgnoreCase: PROC
+					EXTERN String_copy: PROC
 					
 					
  00000000				.data
@@ -413,12 +414,14 @@ MASM3.asm						     Page 1 - 1
 					INVOKE 	putstring, ADDR strReportAuthorInfo	;Display author and file information
 					
 				; Run Tests and Report
- 0000000F  E8 0000000A			call TestString_length			 ;Tests and Reports for String_Length method
- 00000014  E8 0000004E			call TestString_equals
+ 0000000F  E8 00000014			call TestString_length			 ;Tests and Reports for String_Length method
+ 00000014  E8 00000058			call TestString_equals
+ 00000019  E8 000000AB			call TestString_equalsIgnoreCase
+ 0000001E  E8 000000FE			call TestString_copy
 
 					
 				; Exit Program
- 00000019  E8 000000A1			call ExitProgram				 ;Displays exit message and invokes ExitProcess,0
+ 00000023  E8 0000013D			call ExitProgram				 ;Displays exit message and invokes ExitProcess,0
 
 				PUBLIC _start								;END METHOD
 
@@ -432,7 +435,7 @@ MASM3.asm						     Page 1 - 1
 				* Date Last Modified:	October 22, 2016                                                  *
 				******************************************************************************************%
 
- 0000001E 0000001E		TestString_length PROC USES EAX ECX ESI EDI
+ 00000028 00000028		TestString_length PROC USES EAX ECX ESI EDI
 					
 					INVOKE putstring, ADDR strInfoTestStrLength	;Display Test INFO
 				; Initialize Test
@@ -441,10 +444,10 @@ MASM3.asm						     Page 1 - 1
 
 
 				; Call method
- 0000002C  68 00000000 R		push OFFSET strTest1				;Pass Param1
- 00000031  E8 00000000 E		call String_length						;Call method
- 00000036  83 C4 04			add ESP,4								;Repair stack
- 00000039  A3 00000099 R		mov [dReturnedVal],EAX					;Store returned Values
+ 00000036  68 00000000 R		push OFFSET strTest1				;Pass Param1
+ 0000003B  E8 00000000 E		call String_length						;Call method
+ 00000040  83 C4 04			add ESP,4								;Repair stack
+ 00000043  A3 00000099 R		mov [dReturnedVal],EAX					;Store returned Values
 					
 					Invoke intasc32, ADDR strOutput, dReturnedVal
 					Invoke putString, ADDR strNewline
@@ -454,17 +457,17 @@ MASM3.asm						     Page 1 - 1
 
 					ret										;return
 
- 00000067			TestString_length ENDP
+ 00000071			TestString_length ENDP
 
 
- 00000067			TestString_equals PROC USES EAX ECX ESI EDI
+ 00000071			TestString_equals PROC USES EAX ECX ESI EDI
 
 					Invoke putString , ADDR strInfoTestStrEquals
- 00000075  68 00000007 R		push OFFSET strTest2   ;push last parameter first 
- 0000007A  68 00000000 R		push OFFSET strTest1
- 0000007F  E8 00000000 E		call String_equalsIgnoreCase
- 00000084  83 C4 08			add ESP, 8
- 00000087  A3 00000099 R		mov [dReturnedVal],EAX	
+ 0000007F  68 00000007 R		push OFFSET strTest2   ;push last parameter first 
+ 00000084  68 00000000 R		push OFFSET strTest1
+ 00000089  E8 00000000 E		call String_equals
+ 0000008E  83 C4 08			add ESP, 8
+ 00000091  A3 00000099 R		mov [dReturnedVal],EAX	
 					
 					;Invoke putString, EAX
 					Invoke putString, ADDR strNewline
@@ -473,14 +476,52 @@ MASM3.asm						     Page 1 - 1
 					Invoke putstring, ADDR strOutput
 					ret
 
- 000000BF			TestString_equals ENDP
+ 000000C9			TestString_equals ENDP
 
 
 
 
+ 000000C9			TestString_equalsIgnoreCase PROC USES EAX ECX ESI EDI
 
 
 
+				Invoke putString , ADDR strInfoTestEqualsIC
+ 000000D7  68 00000007 R		push OFFSET strTest2   ;push last parameter first 
+ 000000DC  68 00000000 R		push OFFSET strTest1
+ 000000E1  E8 00000000 E		call String_equalsIgnoreCase
+ 000000E6  83 C4 08			add ESP, 8
+ 000000E9  A3 00000099 R		mov [dReturnedVal],EAX	
+					
+					Invoke putString, ADDR strNewline
+					Invoke putString, ADDR strNewline
+					Invoke intasc32, ADDR strOutput, dReturnedVal
+					Invoke putstring, ADDR strOutput
+					ret
+
+
+
+
+ 00000121			TestString_equalsIgnoreCase ENDP
+
+
+
+
+ 00000121			TestString_copy PROC USES EAX ECX ESI EDI
+
+					Invoke putString, ADDR strInfoTestStrCopy
+ 0000012F  68 00000000 R		push OFFSET strTest1
+ 00000134  E8 00000000 E		call String_copy
+ 00000139  83 C4 04			add esp, 4
+ 0000013C  A3 00000099 R		mov [dReturnedVal],EAX	
+					
+					Invoke putString, ADDR strNewline
+					Invoke putString, ADDR strNewline
+					Invoke putString, [dReturnedVal]
+
+
+					
+					ret
+ 00000165			TestString_copy ENDP
 
 				COMMENT %
 				*******************************************************************************************
@@ -492,14 +533,14 @@ MASM3.asm						     Page 1 - 1
 				* Date Last Modified:	October 22, 2016                                                  *
 				******************************************************************************************%
 
- 000000BF			ExitProgram PROC							;To exit the program...
+ 00000165			ExitProgram PROC							;To exit the program...
 					INVOKE putstring, ADDR strPromptExit	;Display exit message to user
 					INVOKE getch							;Hold screen until user hits enter
 					INVOKE ExitProcess, 0					;Exit the program
- 000000D5			ExitProgram ENDP							;END ExitProgram
+ 0000017B			ExitProgram ENDP							;END ExitProgram
 
 				END											;END CODE
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/13/17 23:16:48
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/15/17 13:56:34
 MASM3.asm						     Symbols 2 - 1
 
 
@@ -512,18 +553,20 @@ Segments and Groups:
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00000100 Para	  Stack	  'STACK'	 
 _DATA  . . . . . . . . . . . . .	32 Bit	 0000068C Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 000000D5 Para	  Public  'CODE'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000017B Para	  Public  'CODE'	
 
 
 Procedures,  parameters and locals:
 
                 N a m e                 Type     Value    Attr
 
-$$$00001 . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001E Private
+$$$00001 . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000028 Private
 ExitProcess  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-ExitProgram  . . . . . . . . . .	P Near	 000000BF _TEXT	Length= 00000016 Public
-TestString_equals  . . . . . . .	P Near	 00000067 _TEXT	Length= 00000058 Public
-TestString_length  . . . . . . .	P Near	 0000001E _TEXT	Length= 00000049 Public
+ExitProgram  . . . . . . . . . .	P Near	 00000165 _TEXT	Length= 00000016 Public
+TestString_copy  . . . . . . . .	P Near	 00000121 _TEXT	Length= 00000044 Public
+TestString_equalsIgnoreCase  . .	P Near	 000000C9 _TEXT	Length= 00000058 Public
+TestString_equals  . . . . . . .	P Near	 00000071 _TEXT	Length= 00000058 Public
+TestString_length  . . . . . . .	P Near	 00000028 _TEXT	Length= 00000049 Public
 ascint32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 getche . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 getch  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -551,6 +594,7 @@ Symbols:
 COMMA_KEY  . . . . . . . . . . .	Number	 0000002Ch   
 ENTER_KEY  . . . . . . . . . . .	Number	 0000000Dh   
 STR_MAX  . . . . . . . . . . . .	Number	 0000001Eh   
+String_copy  . . . . . . . . . .	L Near	 00000000 FLAT	External
 String_equalsIgnoreCase  . . . .	L Near	 00000000 FLAT	External
 String_equals  . . . . . . . . .	L Near	 00000000 FLAT	External
 String_length  . . . . . . . . .	L Near	 00000000 FLAT	External
