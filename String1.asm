@@ -397,9 +397,7 @@ String_substring_2 proc Near32
 	;need to make sure start index is greater than length of the string
 	
 	
-	
-	
-	
+	;use substring 1 to get the substring, use length of the string as teh 
 	push eax
 	push [ebp + 12]
 	push [ebp + 8 ]
@@ -417,5 +415,79 @@ String_substring_2 proc Near32
 
 String_substring_2 endp
 
+
+
+
+String_charAt proc Near32
+
+	push ebp					;preserve base register
+	mov ebp,esp	      ; new stack frame
+	push ebx 
+	push ecx   ;saving registers
+	push esi
+	push edx    ; new stack frame
+	
+	
+	
+	push [ebp + 12]
+	push [ebp + 12]
+	push [ebp +8]
+	call String_substring_1
+	add esp, 12
+
+	
+	
+	
+
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	ret
+String_charAt endp
+
+
+
+
+String_startsWith_1 proc Near32
+
+	push ebp					;preserve base register
+	mov ebp,esp	      ; new stack frame
+	push ebx 
+	push ecx   ;saving registers
+	push esi
+	push edx    ; new stack frame
+
+	push [ebp + 12] ; save the prefix
+	call String_length
+	add esp, 4
+	sub eax, 
+	
+	
+	
+	push [ebp +16]   ;push the start pos
+	push [ebp+8] 
+	
+	call String_substring_1
+	add esp, 8
+	
+	
+	push EAX
+	push [ebp + 12]
+	call String_equals
+	add esp, 8
+	
+	
+
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	ret
+String_startsWith_1 endp
 
 end

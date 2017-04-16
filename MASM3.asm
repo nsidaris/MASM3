@@ -29,6 +29,7 @@
 	EXTERN String_copy: PROC
 	EXTERN String_substring_1: PROC
 	EXTERN String_substring_2: PROC
+	EXTERN String_charAt: PROC
 	
 	
 	.data
@@ -43,6 +44,7 @@ strTest2            byte  "gOlden", 0
 strOutput           dword ?
 dIndex1             dword 1
 dIndex2				dword 1
+strTest3			byte "olden"
 
 							;--- Insert test values here seperated with commas --- 
 strTestVals			byte	"V@1ues,string,not string,,!@#$%^^,MiXed-Up V@1ues"
@@ -127,6 +129,7 @@ _start:								 ;Entry point in program
 	call TestString_copy
 	call TestString_substring_1
 	call TestString_substring_2
+	call TestString_charAt
 
 	
 ; Exit Program
@@ -263,7 +266,7 @@ TestString_substring_1 ENDP
 TestString_substring_2 PROC USES EAX ECX ESI EDI
 
 
-Invoke putString, ADDR strInfoSubstr2
+	Invoke putString, ADDR strInfoSubstr2
 	push dIndex1
 	push OFFSET strTest1
 	call String_subString_2
@@ -277,6 +280,31 @@ Invoke putString, ADDR strInfoSubstr2
 
 
 TestString_substring_2 ENDP
+
+TestString_charAt PROC USES EAX ECX ESI EDI
+
+	Invoke putString, ADDR strInfoTestStrCharAt
+	push dIndex2
+	push OFFSET strTest1
+	call String_charAt
+	add esp, 8
+		Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke putString, EAX
+
+
+TestString_charAt endp
+
+
+TestString_startsWith_1  PROC USES EAX ECX ESI EDI
+
+	Invoke putString, ADDR strInfoStrStartsWith1
+	
+	
+	push dIndex1
+	
+
+TestString_startsWith_1 endp
 
 COMMENT %
 *******************************************************************************************
