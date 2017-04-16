@@ -30,6 +30,9 @@
 	EXTERN String_substring_1: PROC
 	EXTERN String_substring_2: PROC
 	EXTERN String_charAt: PROC
+	EXTERN String_startsWith_1: PROC
+	EXTERN String_startsWith_2: PROC
+	EXTERN String_endsWith: PROC
 	
 	
 	.data
@@ -41,10 +44,11 @@ ENTER_KEY = 13				;value for the enter key
 ; String Constant TESTVALS
 strTest1            byte  "Golden", 0
 strTest2            byte  "gOlden", 0
+strTest3			byte "ens", 0
 strOutput           dword ?
 dIndex1             dword 1
 dIndex2				dword 1
-strTest3			byte "olden"
+
 
 							;--- Insert test values here seperated with commas --- 
 strTestVals			byte	"V@1ues,string,not string,,!@#$%^^,MiXed-Up V@1ues"
@@ -130,6 +134,9 @@ _start:								 ;Entry point in program
 	call TestString_substring_1
 	call TestString_substring_2
 	call TestString_charAt
+	call TestString_startsWith_1
+	call TestString_startsWith_2
+	call TestString_endsWith
 
 	
 ; Exit Program
@@ -278,7 +285,7 @@ TestString_substring_2 PROC USES EAX ECX ESI EDI
 	Invoke putString, ADDR strNewline
 	Invoke putString, EAX
 
-
+	ret 
 TestString_substring_2 ENDP
 
 TestString_charAt PROC USES EAX ECX ESI EDI
@@ -292,7 +299,7 @@ TestString_charAt PROC USES EAX ECX ESI EDI
 	Invoke putString, ADDR strNewline
 	Invoke putString, EAX
 
-
+	ret
 TestString_charAt endp
 
 
@@ -302,10 +309,65 @@ TestString_startsWith_1  PROC USES EAX ECX ESI EDI
 	
 	
 	push dIndex1
+	push OFFSET strTest3
+	push OFFSET strTest1
+	call String_startsWith_1
+	add esp, 12
+	mov [dReturnedVal],EAX	
 	
-
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+	
+	ret 
 TestString_startsWith_1 endp
 
+
+
+TestString_startsWith_2 PROC USES EAX ECX ESI EDI
+
+Invoke putString, ADDR strInfoStrStartsWith2
+
+	push OFFSET strTest3
+	push OFFSET strTest1
+	call String_startsWith_2
+	add esp, 8
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+
+
+	ret
+TestString_startsWith_2 endp
+
+
+
+
+TestString_endsWith PROC USES EAX ECX ESI EDI
+
+Invoke putString, ADDR strInfoStrEndsWith 	
+
+
+	push OFFSET strTest3
+	push OFFSET strTest1
+	call String_endsWith
+	add esp, 8
+
+mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+
+
+
+	ret
+TestString_endsWith endp
 COMMENT %
 *******************************************************************************************
 * Name:	ExitProgram                                                                       *

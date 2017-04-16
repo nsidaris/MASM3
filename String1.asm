@@ -460,18 +460,24 @@ String_startsWith_1 proc Near32
 	push esi
 	push edx    ; new stack frame
 
-	push [ebp + 12] ; save the prefix
-	call String_length
+	mov ebx, [ebp + 16]  ;save start position
+	push [ebp + 12] 
+	call String_length ; get length of the prefix
+
+	
 	add esp, 4
-	sub eax, 
+	add eax, ebx 
+	sub eax, 1    ;eax should now have the end pos
+
 	
 	
-	
-	push [ebp +16]   ;push the start pos
+	push eax
+	push ebx   ;push the start pos
 	push [ebp+8] 
 	
 	call String_substring_1
-	add esp, 8
+	add esp, 12
+
 	
 	
 	push EAX
@@ -489,5 +495,85 @@ String_startsWith_1 proc Near32
 
 	ret
 String_startsWith_1 endp
+
+String_startsWith_2 proc Near32
+
+	push ebp					;preserve base register
+	mov ebp,esp	      ; new stack frame
+	push ebx 
+	push ecx   ;saving registers
+	push esi
+	push edx    ; new stack frame
+	
+	
+	mov eax, 0
+	push eax
+	push [ebp + 12]
+	push [ebp +  8]
+	call String_startsWith_1
+	add esp, 12
+	
+	
+	
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	ret
+
+String_startsWith_2 endp
+
+String_endsWith proc Near32
+
+
+	push ebp					;preserve base register
+	mov ebp,esp	      ; new stack frame
+	push ebx 
+	push ecx   ;saving registers
+	push esi
+	push edx    ; new stack frame
+	
+	
+	push [ebp + 8]
+	call String_length  ;get the length of the main string
+	add esp, 4
+	mov ebx, eax
+	
+	push [ebp + 12]
+	call String_length  ;get the length of the suffix
+	
+	add esp, 4
+	
+	;error check
+	
+	
+	sub ebx, eax ; find the start indez
+	 
+	push ebx 
+	push [ebp + 8]
+	call String_substring_2
+	add esp, 8
+	
+	
+	push eax
+	push [ebp + 12]
+	call String_equals
+	add esp, 8
+	
+
+
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	ret
+
+String_endsWith endp
+
+
 
 end
