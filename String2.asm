@@ -29,7 +29,7 @@ COMMENT %			;terminating symbol for the block is
 *		Determine the number of characters in a string				*
 *											*
 *   @param  lpString1:dword  								*
-*   @return length:dword  the length of a the string					*
+*   @return length:dword  the length of a the string	 				*
 ****************************************************************************************%
 ;COMMENT %
 String_length	proc Near32
