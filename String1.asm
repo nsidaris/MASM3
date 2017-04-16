@@ -21,7 +21,7 @@
 strInput	byte	20 dup(?)	
 strNewline 	        byte 10,0 ;newline constant
 strOutput dword ?
-
+dOffset   dword ?
 
 strTest1 byte 13,10,  "Parsing something for word 1", 13,10,  0
 strTest2 byte 13,10, "Parsing something for word 2", 13,10,  0
@@ -152,9 +152,9 @@ String_equals endp
 
  COMMENT %			;terminating symbol for the block is  								
  ****************************************************************************************
- * Name: String_equals																    *
+ * Name: String_equalsIgnoreCase												        *
  * Purpose:																				*
- *		See if 2 strings are equal                                                  	*
+ *		See if 2 strings are equal, ignores upper vs lowercase                        	*
  *																						*
  * Date created: October 1, 2016														*
  * Date last modified: October 19, 2016													*
@@ -166,8 +166,6 @@ String_equals endp
  *   @param  lpString1:dword, lpString2:dword  											*
  *   @return equal:byte  whether or not the strings are equal							*
  ***************************************************************************************%
-
-
 
 String_equalsIgnoreCase proc Near32
 
@@ -255,7 +253,22 @@ finish:
 	
 String_equalsIgnoreCase endp	
 
-
+ COMMENT %			;terminating symbol for the block is  								
+ ****************************************************************************************
+ * Name: String_copy															        *
+ * Purpose:																				*
+ *		Copies a string                                                             	*
+ *																						*
+ * Date created: October 1, 2016														*
+ * Date last modified: October 19, 2016													*
+ *																						*
+ * Notes on specifications, special algorithms, and assumptions:						*
+ *   notes go here. Omit these lines if there is no special algorithm or there were no	*
+ *   assumptions.																		*
+ *																						*
+ *   @param  lpString1:dword										                    *
+ *   @return string:dword	                                        					*
+ ***************************************************************************************%
 String_copy proc Near32
 
 	push ebp					;preserve base register
@@ -270,7 +283,7 @@ String_copy proc Near32
 	call String_length 
 	mov ecx, eax   ;save the length of the string
 	add esp, 4
-	add ecx, 1
+	
 	
 	Invoke memoryallocBailey, ecx
 	mov esi, 0
@@ -297,8 +310,112 @@ buildString:
 	RET
 
 String_copy endp
+ COMMENT %			;terminating symbol for the block is  								
+ ****************************************************************************************
+ * Name: String_substring_1														        *
+ * Purpose:																				*
+ *		Returns a section of a string                                                 	*
+ *																						*
+ * Date created: October 1, 2016														*
+ * Date last modified: October 19, 2016													*
+ *																						*
+ * Notes on specifications, special algorithms, and assumptions:						*
+ *   notes go here. Omit these lines if there is no special algorithm or there were no	*
+ *   assumptions.																		*
+ *																						*
+ *   @param  lpString1:dword	                                                        *
+ *   @param  beginIndex:int start index                                                 *
+ *	 @param endIndex:int    end index                                                   *
+ *   @return string:dword	                                     					    *
+ ***************************************************************************************%
+String_substring_1 proc Near32
+	push ebp					;preserve base register
+	mov ebp,esp	      ; new stack frame
+	push ebx 
+	push ecx   ;saving registers
+	push esi
+	push edx    ; new stack frame
+	
+
+	
+	mov ebx, [ebp + 8] ; save string
+	mov edx, [ebp + 12] ;start index
+	mov ecx, [ebp + 16] ;end index
+	;make sure they are gud
+	add ecx, 1 ; account for the null char
+	sub ecx, edx ; ecx is the length of the substring
+	mov esi, edx ;save start index to esi
+	
+
+	Invoke memoryallocBailey, ecx  ;allocate memory
+	
+	
+	mov dOffset, esi  ;find the offset for copying 
+	mov edx, eax
+buildString:
+
+	mov al, [ebx + esi]  ;get the first character
+	push esi
+	sub esi, dOffset     ;calc the offset to save the character
+	mov [EDX + ESI], al
+	pop esi
+	inc esi      
+	loop buildString   ;loop until finished with 
+	
+		
+	mov al, 0 ;add dat Null
+	
+	mov [EDX + ESI], al 
+	mov eax, edx
+	
+	
+
+	
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	ret
+String_substring_1 endp
 
 
+
+
+String_substring_2 proc Near32
+	push ebp					;preserve base register
+	mov ebp,esp	      ; new stack frame
+	push ebx 
+	push ecx   ;saving registers
+	push esi
+	push edx    ; new stack frame
+
+	push [ebp + 8]
+	call String_length
+	add esp, 4
+	;need to make sure start index is greater than length of the string
+	
+	
+	
+	
+	
+	push eax
+	push [ebp + 12]
+	push [ebp + 8 ]
+	call String_substring_1
+	add esp, 12
+	
+	
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	ret
+
+String_substring_2 endp
 
 
 end

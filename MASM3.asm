@@ -27,6 +27,8 @@
 	EXTERN String_equals:PROC
 	EXTERN String_equalsIgnoreCase: PROC
 	EXTERN String_copy: PROC
+	EXTERN String_substring_1: PROC
+	EXTERN String_substring_2: PROC
 	
 	
 	.data
@@ -39,6 +41,8 @@ ENTER_KEY = 13				;value for the enter key
 strTest1            byte  "Golden", 0
 strTest2            byte  "gOlden", 0
 strOutput           dword ?
+dIndex1             dword 1
+dIndex2				dword 1
 
 							;--- Insert test values here seperated with commas --- 
 strTestVals			byte	"V@1ues,string,not string,,!@#$%^^,MiXed-Up V@1ues"
@@ -121,6 +125,8 @@ _start:								 ;Entry point in program
 	call TestString_equals
 	call TestString_equalsIgnoreCase
 	call TestString_copy
+	call TestString_substring_1
+	call TestString_substring_2
 
 	
 ; Exit Program
@@ -219,12 +225,58 @@ TestString_copy PROC USES EAX ECX ESI EDI
 	
 	Invoke putString, ADDR strNewline
 	Invoke putString, ADDR strNewline
-	Invoke putString, [dReturnedVal]
+	Invoke putString, EAX
 
 
 	
 	ret
 TestString_copy ENDP
+
+
+
+
+TestString_substring_1 PROC USES EAX ECX ESI EDI
+
+
+	Invoke putString, ADDR strInfoSubstr1
+	push  dIndex2
+	push  dIndex1
+	push OFFSET strTest1
+	call String_subString_1
+	add esp, 12
+	
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke putString, EAX
+	
+
+
+	ret
+TestString_substring_1 ENDP
+
+
+
+
+
+TestString_substring_2 PROC USES EAX ECX ESI EDI
+
+
+Invoke putString, ADDR strInfoSubstr2
+	push dIndex1
+	push OFFSET strTest1
+	call String_subString_2
+	add esp, 8
+	
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke putString, EAX
+
+
+TestString_substring_2 ENDP
 
 COMMENT %
 *******************************************************************************************

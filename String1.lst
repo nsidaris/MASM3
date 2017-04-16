@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/15/17 13:56:34
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/15/17 17:28:14
 String1.asm						     Page 1 - 1
 
 
@@ -27,16 +27,16 @@ String1.asm						     Page 1 - 1
 	   ]
  00000014 0A 00			strNewline 	        byte 10,0 ;newline constant
  00000016 00000000		strOutput dword ?
+ 0000001A 00000000		dOffset   dword ?
 
-
- 0000001A 0D 0A 50 61 72	strTest1 byte 13,10,  "Parsing something for word 1", 13,10,  0
+ 0000001E 0D 0A 50 61 72	strTest1 byte 13,10,  "Parsing something for word 1", 13,10,  0
 	   73 69 6E 67 20
 	   73 6F 6D 65 74
 	   68 69 6E 67 20
 	   66 6F 72 20 77
 	   6F 72 64 20 31
 	   0D 0A 00
- 0000003B 0D 0A 50 61 72	strTest2 byte 13,10, "Parsing something for word 2", 13,10,  0
+ 0000003F 0D 0A 50 61 72	strTest2 byte 13,10, "Parsing something for word 2", 13,10,  0
 	   73 69 6E 67 20
 	   73 6F 6D 65 74
 	   68 69 6E 67 20
@@ -140,7 +140,7 @@ String1.asm						     Page 1 - 1
  00000053  BE 00000000			mov esi, 0
 					
  00000058			checkChar:
- 00000058  8A 04 16	mov al, [edx + esi]
+ 00000058  8A 04 16			mov al, [edx + esi]
  0000005B  8A 24 1E			mov ah, [ebx + esi]
  0000005E  38 C4			cmp ah, al
  00000060  75 DB			jne UnevenLength
@@ -170,9 +170,9 @@ String1.asm						     Page 1 - 1
 
 				 COMMENT %			;terminating symbol for the block is  								
 				 ****************************************************************************************
-				 * Name: String_equals																    *
+				 * Name: String_equalsIgnoreCase												        *
 				 * Purpose:																				*
-				 *		See if 2 strings are equal                                                  	*
+				 *		See if 2 strings are equal, ignores upper vs lowercase                        	*
 				 *																						*
 				 * Date created: October 1, 2016														*
 				 * Date last modified: October 19, 2016													*
@@ -184,8 +184,6 @@ String1.asm						     Page 1 - 1
 				 *   @param  lpString1:dword, lpString2:dword  											*
 				 *   @return equal:byte  whether or not the strings are equal							*
 				 ***************************************************************************************%
-
-
 
  00000072			String_equalsIgnoreCase proc Near32
 
@@ -273,7 +271,22 @@ String1.asm						     Page 1 - 1
 					
  000000DF			String_equalsIgnoreCase endp	
 
-
+				 COMMENT %			;terminating symbol for the block is  								
+				 ****************************************************************************************
+				 * Name: String_copy															        *
+				 * Purpose:																				*
+				 *		Copies a string                                                             	*
+				 *																						*
+				 * Date created: October 1, 2016														*
+				 * Date last modified: October 19, 2016													*
+				 *																						*
+				 * Notes on specifications, special algorithms, and assumptions:						*
+				 *   notes go here. Omit these lines if there is no special algorithm or there were no	*
+				 *   assumptions.																		*
+				 *																						*
+				 *   @param  lpString1:dword										                    *
+				 *   @return string:dword	                                        					*
+				 ***************************************************************************************%
  000000DF			String_copy proc Near32
 
  000000DF  55				push ebp					;preserve base register
@@ -288,39 +301,142 @@ String1.asm						     Page 1 - 1
  000000E9  E8 FFFFFF12			call String_length 
  000000EE  8B C8			mov ecx, eax   ;save the length of the string
  000000F0  83 C4 04			add esp, 4
- 000000F3  83 C1 01			add ecx, 1
+	
 					
 					Invoke memoryallocBailey, ecx
- 000000FC  BE 00000000			mov esi, 0
+ 000000F9  BE 00000000			mov esi, 0
 					
- 00000101  8B 5D 08			mov ebx, [ebp + 8]
- 00000104  8B D0			mov edx, eax
- 00000106			buildString:
+ 000000FE  8B 5D 08			mov ebx, [ebp + 8]
+ 00000101  8B D0			mov edx, eax
+ 00000103			buildString:
 					
- 00000106  8A 04 1E			mov al, [ebx + esi]
- 00000109  88 04 16			mov [EDX + ESI], al
- 0000010C  46				inc esi
- 0000010D  E2 F7			loop buildString
+ 00000103  8A 04 1E			mov al, [ebx + esi]
+ 00000106  88 04 16			mov [EDX + ESI], al
+ 00000109  46				inc esi
+ 0000010A  E2 F7			loop buildString
 					
 						
 					
- 0000010F  8B C2			mov eax, edx
- 00000111  5A				pop edx
+ 0000010C  8B C2			mov eax, edx
+ 0000010E  5A				pop edx
 					
- 00000112  5E				pop esi ;restore registers
- 00000113  59				pop ecx
- 00000114  5B				pop ebx
- 00000115  5D				pop ebp
+ 0000010F  5E				pop esi ;restore registers
+ 00000110  59				pop ecx
+ 00000111  5B				pop ebx
+ 00000112  5D				pop ebp
 
- 00000116  C3				RET
+ 00000113  C3				RET
 
- 00000117			String_copy endp
+ 00000114			String_copy endp
+				 COMMENT %			;terminating symbol for the block is  								
+				 ****************************************************************************************
+				 * Name: String_substring_1														        *
+				 * Purpose:																				*
+				 *		Returns a section of a string                                                 	*
+				 *																						*
+				 * Date created: October 1, 2016														*
+				 * Date last modified: October 19, 2016													*
+				 *																						*
+				 * Notes on specifications, special algorithms, and assumptions:						*
+				 *   notes go here. Omit these lines if there is no special algorithm or there were no	*
+				 *   assumptions.																		*
+				 *																						*
+				 *   @param  lpString1:dword	                                                        *
+				 *   @param  beginIndex:int start index                                                 *
+				 *	 @param endIndex:int    end index                                                   *
+				 *   @return string:dword	                                     					    *
+				 ***************************************************************************************%
+ 00000114			String_substring_1 proc Near32
+ 00000114  55				push ebp					;preserve base register
+ 00000115  8B EC			mov ebp,esp	      ; new stack frame
+ 00000117  53				push ebx 
+ 00000118  51				push ecx   ;saving registers
+ 00000119  56				push esi
+ 0000011A  52				push edx    ; new stack frame
+					
+
+					
+ 0000011B  8B 5D 08			mov ebx, [ebp + 8] ; save string
+ 0000011E  8B 55 0C			mov edx, [ebp + 12] ;start index
+ 00000121  8B 4D 10			mov ecx, [ebp + 16] ;end index
+					;make sure they are gud
+ 00000124  83 C1 01			add ecx, 1 ; account for the null char
+ 00000127  2B CA			sub ecx, edx ; ecx is the length of the substring
+ 00000129  8B F2			mov esi, edx ;save start index to esi
+					
+
+					Invoke memoryallocBailey, ecx  ;allocate memory
+					
+					
+ 00000131  89 35 0000001A R		mov dOffset, esi  ;find the offset for copying 
+ 00000137  8B D0			mov edx, eax
+ 00000139			buildString:
+
+ 00000139  8A 04 1E			mov al, [ebx + esi]  ;get the first character
+ 0000013C  56				push esi
+ 0000013D  2B 35 0000001A R		sub esi, dOffset     ;calc the offset to save the character
+ 00000143  88 04 16			mov [EDX + ESI], al
+ 00000146  5E				pop esi
+ 00000147  46				inc esi      
+ 00000148  E2 EF			loop buildString   ;loop until finished with 
+					
+						
+ 0000014A  B0 00			mov al, 0 ;add dat Null
+					
+ 0000014C  88 04 16			mov [EDX + ESI], al 
+ 0000014F  8B C2			mov eax, edx
+					
+					
+
+					
+ 00000151  5A				pop edx
+ 00000152  5E				pop esi ;restore registers
+ 00000153  59				pop ecx
+ 00000154  5B				pop ebx
+ 00000155  5D				pop ebp
+
+ 00000156  C3				ret
+ 00000157			String_substring_1 endp
 
 
+
+
+ 00000157			String_substring_2 proc Near32
+ 00000157  55				push ebp					;preserve base register
+ 00000158  8B EC			mov ebp,esp	      ; new stack frame
+ 0000015A  53				push ebx 
+ 0000015B  51				push ecx   ;saving registers
+ 0000015C  56				push esi
+ 0000015D  52				push edx    ; new stack frame
+
+ 0000015E  FF 75 08			push [ebp + 8]
+ 00000161  E8 FFFFFE9A			call String_length
+ 00000166  83 C4 04			add esp, 4
+					
+					
+					
+					
+					
+ 00000169  50				push eax
+ 0000016A  FF 75 0C			push [ebp + 12]
+ 0000016D  FF 75 08			push [ebp + 8 ]
+ 00000170  E8 FFFFFF9F			call String_substring_1
+ 00000175  83 C4 0C			add esp, 12
+					
+					
+ 00000178  5A				pop edx
+ 00000179  5E				pop esi ;restore registers
+ 0000017A  59				pop ecx
+ 0000017B  5B				pop ebx
+ 0000017C  5D				pop ebp
+
+ 0000017D  C3				ret
+
+ 0000017E			String_substring_2 endp
 
 
 				end
-Microsoft (R) Macro Assembler Version 6.14.8444		    04/15/17 13:56:34
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/15/17 17:28:14
 String1.asm						     Symbols 2 - 1
 
 
@@ -332,16 +448,16 @@ Segments and Groups:
 
 FLAT . . . . . . . . . . . . . .	GROUP
 STACK  . . . . . . . . . . . . .	32 Bit	 00000100 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 0000005C Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 00000117 Para	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000060 Para	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 0000017E Para	  Public  'CODE'	
 
 
 Procedures,  parameters and locals:
 
                 N a m e                 Type     Value    Attr
 
-String_copy  . . . . . . . . . .	P Near	 000000DF _TEXT	Length= 00000038 Public
-  buildString  . . . . . . . . .	L Near	 00000106 _TEXT	
+String_copy  . . . . . . . . . .	P Near	 000000DF _TEXT	Length= 00000035 Public
+  buildString  . . . . . . . . .	L Near	 00000103 _TEXT	
 String_equalsIgnoreCase  . . . .	P Near	 00000072 _TEXT	Length= 0000006D Public
   UnevenLength . . . . . . . . .	L Near	 00000093 _TEXT	
   equalStrings . . . . . . . . .	L Near	 0000009A _TEXT	
@@ -361,6 +477,9 @@ String_equals  . . . . . . . . .	P Near	 0000001C _TEXT	Length= 00000056 Public
 String_length  . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000001C Public
   stLoop . . . . . . . . . . . .	L Near	 0000000D _TEXT	
   finished . . . . . . . . . . .	L Near	 00000016 _TEXT	
+String_substring_1 . . . . . . .	P Near	 00000114 _TEXT	Length= 00000043 Public
+  buildString  . . . . . . . . .	L Near	 00000139 _TEXT	
+String_substring_2 . . . . . . .	P Near	 00000157 _TEXT	Length= 00000027 Public
 ascint32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 getstring  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 intasc32 . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
@@ -381,11 +500,12 @@ Symbols:
 @fardata?  . . . . . . . . . . .	Text   	 FLAT
 @fardata . . . . . . . . . . . .	Text   	 FLAT
 @stack . . . . . . . . . . . . .	Text   	 FLAT
+dOffset  . . . . . . . . . . . .	DWord	 0000001A _DATA	
 strInput . . . . . . . . . . . .	Byte	 00000000 _DATA	
 strNewline . . . . . . . . . . .	Byte	 00000014 _DATA	
 strOutput  . . . . . . . . . . .	DWord	 00000016 _DATA	
-strTest1 . . . . . . . . . . . .	Byte	 0000001A _DATA	
-strTest2 . . . . . . . . . . . .	Byte	 0000003B _DATA	
+strTest1 . . . . . . . . . . . .	Byte	 0000001E _DATA	
+strTest2 . . . . . . . . . . . .	Byte	 0000003F _DATA	
 
 	   0 Warnings
 	   0 Errors
