@@ -497,7 +497,10 @@ TestString_lastIndexOf3 endp
 COMMENT %
 *******************************************************************************************
 * Name:	TestString_concat                                                                 *
-* Purpose:			                                                                      *
+* Purpose:			                                                          *
+*	test String_concat procedure							  *
+* passes 2 strings (lpString1:dword, lpString2:dword)					  *
+* returns address of new string (lpNewString:dword) in eax				  *
 ******************************************************************************************%
 ;Call method
 TestString_concat PROC USES EAX EBX ECX EDX ESI EDI
@@ -523,8 +526,8 @@ TestString_concat endp
 COMMENT %
 *******************************************************************************************
 * Name:	ExitProgram                                                                       *
-* Purpose:			                                                                      *
-*				Displays message and then invokes ExitProcess                             *
+* Purpose:			                                                          *
+*				Displays message and then invokes ExitProcess             *
 ******************************************************************************************%
 ExitProgram PROC							;To exit the program...
 	INVOKE putstring, ADDR strPromptExit	;Display exit message to user
