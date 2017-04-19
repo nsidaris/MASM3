@@ -1,4 +1,3 @@
-
 ;*************************************************************************************
 ; Program Name:  String1.asm
 ; Programmer:    Nick Sidaris
@@ -270,7 +269,6 @@ String_equalsIgnoreCase endp
  *   @return string:dword	                                        					*
  ***************************************************************************************%
 String_copy proc Near32
-
 	push ebp					;preserve base register
 	mov ebp,esp	      ; new stack frame
 	push ebx 
@@ -278,37 +276,37 @@ String_copy proc Near32
 	push esi
 	push edx 
 	
-
 	push [ebp + 8] ;push the string to the stack
 	call String_length 
-	mov ecx, eax   ;save the length of the string
 	add esp, 4
-	
+	cmp eax, 0
+	je Invalid
+	mov ecx, eax   ;save the length of the string
 	
 	Invoke memoryallocBailey, ecx
 	mov esi, 0
 	
 	mov ebx, [ebp + 8]
 	mov edx, eax
-buildString:
-	
+buildString:	
 	mov al, [ebx + esi]
 	mov [EDX + ESI], al
 	inc esi
 	loop buildString
 	
-		
-	
-	mov eax, edx
+	mov eax, edx	;store address of new string in eax
+	jmp finshed
+
+Invalid:
+	mov eax, [ebp + 8]	;passes orignal(empty string) string back in eax
+finshed:	
 	pop edx
-	
 	pop esi ;restore registers
 	pop ecx
 	pop ebx
 	pop ebp
 
-	RET
-
+	ret
 String_copy endp
  COMMENT %			;terminating symbol for the block is  								
  ****************************************************************************************
@@ -336,32 +334,33 @@ String_substring_1 proc Near32
 	push esi
 	push edx    ; new stack frame
 	
-	
-	
 	mov ebx, [ebp + 8] ; save string
 	mov edx, [ebp + 12] ;start index
 	mov ecx, [ebp + 16] ;end index
 	cmp ecx, edx
 	jl Invalid
+	
 	push [ebp + 8]
 	call String_length
 	add esp, 4
 	cmp edx, eax
 	jg Invalid
+	cmp ecx, eax	;check if end index is greater than string length
+	jng cont
+	
+	mov ecx,eax
+	cont:
 	
 	;make sure they are gud
 	add ecx, 1 ; account for the null char
 	sub ecx, edx ; ecx is the length of the substring
 	mov esi, edx ;save start index to esi
 	
-
 	Invoke memoryallocBailey, ecx  ;allocate memory
-	
-	
+		
 	mov dOffset, esi  ;find the offset for copying 
 	mov edx, eax
 buildString:
-
 	mov al, [ebx + esi]  ;get the first character
 	push esi
 	sub esi, dOffset     ;calc the offset to save the character
@@ -369,31 +368,21 @@ buildString:
 	pop esi
 	inc esi      
 	loop buildString   ;loop until finished with 
-	
-		
+			
 	mov al, 0 ;add dat Null
 	
 	mov [EDX + ESI], al 
-	mov eax, edx
-	
-	
+	mov eax, edx		
+	jmp finshed
 
-	
-	pop edx
-	pop esi ;restore registers
-	pop ecx
-	pop ebx
-	pop ebp
-
-	ret
-	
 Invalid:
-	pop edx
-	pop esi ;restore registers
-	pop ecx
-	pop ebx
-	pop ebp
-	mov eax, -1
+    mov eax, -1   
+finshed:    
+    pop edx    
+    pop esi ;restore registers
+    pop ecx
+    pop ebx
+    pop ebp
 
 	ret
 String_substring_1 endp
@@ -414,7 +403,6 @@ String_substring_2 proc Near32
 	add esp, 4
 	;need to make sure start index is greater than length of the string
 	
-
 	;use substring 1 to get the substring, use length of the string as teh 
 	push eax
 	push [ebp + 12]
@@ -422,7 +410,7 @@ String_substring_2 proc Near32
 	call String_substring_1
 	add esp, 12
 	
-	
+;largeStart:
 	pop edx
 	pop esi ;restore registers
 	pop ecx
@@ -460,31 +448,22 @@ String_charAt proc Near32
 	call String_substring_1
 	add esp, 12
 
-	
-	
-	
-
 	pop edx
 	pop esi ;restore registers
 	pop ecx
 	pop ebx
 	pop ebp
 
-	ret
-	
+	ret	
 Invalid:
-
 	mov eax, -1
 	pop edx
 	pop esi ;restore registers
 	pop ecx
 	pop ebx
 	pop ebp
-
 	ret
 String_charAt endp
-
-
 
 
 String_startsWith_1 proc Near32
