@@ -93,11 +93,15 @@ strTestingStrLastIndex3 byte 10,13, "String_lastIndexOf3 tests:",0
 
 ; String Constant TESTVALS
 strTest1            byte  "Golden", 0
-strTest2            byte  "gOlden", 0
-strTest3			byte "ens", 0
+strTest2            byte  "golden", 0
+strTest3			byte "en", 0
+strTest4			byte (STR_MAX + 1) dup(?)
+strTest5			byte "gol",0
+strTest6			byte "Gol",0
 strOutput           dword ?
 dIndex1             dword 1
-dIndex2				dword 1
+dIndex2				dword 100
+strInfoTestStrLength byte	10,13,10,13,32,32,32,"Now testing the String_Length Method",10,0
 strInfoTestStrEquals 	byte	10,13,10,13,32,32,32,"Now testing the String_Equals Method",10,13
 strInfoTestEqualsIC	 	byte	10,13,10,13,32,32,32,"Now testing the String_EqualsIgnoreCase Method",10,13
 strInfoTestStrCopy	 	byte	10,13,10,13,32,32,32,"Now testing the String_Copy Method",10,13
@@ -137,7 +141,7 @@ _start:								 ;Entry point in program
 	INVOKE putstring, ADDR strHeader4
 	
 ;Test String2.asm procedures
-	call TestString_length
+	;call TestString_length
 	call TestString_indexOf1
 	call TestString_indexOf2
 	call TestString_indexOf3	
@@ -149,15 +153,15 @@ _start:								 ;Entry point in program
 	call TestString_lastIndexOf3
 	call TestString_concat
 ;Test String1.asm procedures
-	call TestString_equals
-	call TestString_equalsIgnoreCase
-	call TestString_copy
-	call TestString_substring_1
-	call TestString_substring_2
-	call TestString_charAt
-	call TestString_startsWith_1
-	call TestString_startsWith_2
-	call TestString_endsWith	
+;	call TestString_equals
+;	call TestString_equalsIgnoreCase
+;	call TestString_copy
+;	call TestString_substring_1
+;	call TestString_substring_2
+;	call TestString_charAt
+;	call TestString_startsWith_1
+;	call TestString_startsWith_2
+;	call TestString_endsWith	
 	
 	call ExitProgram				 ;Displays exit message and invokes ExitProcess,0
 
@@ -907,151 +911,6 @@ skip8:
 	
 	ret
 TestString_concat endp
-
-TestString_equals PROC USES EAX ECX ESI EDI
-	Invoke putString , ADDR strInfoTestStrEquals
-	push OFFSET strTest2   ;push last parameter first 
-	push OFFSET strTest1
-	call String_equals
-	add ESP, 8
-	mov [dReturnedVal],EAX	
-	
-	;Invoke putString, EAX
-	Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke intasc32, ADDR strOutput, dReturnedVal
-	Invoke putstring, ADDR strOutput
-	
-	ret
-TestString_equals ENDP
-
-TestString_equalsIgnoreCase PROC USES EAX ECX ESI EDI
-	Invoke putString , ADDR strInfoTestEqualsIC
-	push OFFSET strTest2   ;push last parameter first 
-	push OFFSET strTest1
-	call String_equalsIgnoreCase
-	add ESP, 8
-	mov [dReturnedVal],EAX	
-	
-	Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke intasc32, ADDR strOutput, dReturnedVal
-	Invoke putstring, ADDR strOutput
-	
-	ret
-TestString_equalsIgnoreCase ENDP
-
-TestString_copy PROC USES EAX ECX ESI EDI
-	Invoke putString, ADDR strInfoTestStrCopy
-	push OFFSET strTest1
-	call String_copy
-	add esp, 4
-	mov [dReturnedVal],EAX	
-	
-	Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke putString, EAX	
-	
-	ret
-TestString_copy ENDP
-
-TestString_substring_1 PROC USES EAX ECX ESI EDI
-	Invoke putString, ADDR strInfoSubstr1
-	push  dIndex2
-	push  dIndex1
-	push OFFSET strTest1
-	call String_subString_1
-	add esp, 12
-	
-	mov [dReturnedVal],EAX	
-	
-	Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke putString, EAX
-	
-	ret
-TestString_substring_1 ENDP
-
-TestString_substring_2 PROC USES EAX ECX ESI EDI
-	Invoke putString, ADDR strInfoSubstr2
-	push dIndex1
-	push OFFSET strTest1
-	call String_subString_2
-	add esp, 8
-	
-	mov [dReturnedVal],EAX	
-	
-	Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke putString, EAX
-
-	ret 
-TestString_substring_2 ENDP
-
-TestString_charAt PROC USES EAX ECX ESI EDI
-	Invoke putString, ADDR strInfoTestStrCharAt
-	push dIndex2
-	push OFFSET strTest1
-	call String_charAt
-	add esp, 8
-		Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke putString, EAX
-
-	ret
-TestString_charAt endp
-
-TestString_startsWith_1  PROC USES EAX ECX ESI EDI
-	Invoke putString, ADDR strInfoStrStartsWith1
-	
-	push dIndex1
-	push OFFSET strTest3
-	push OFFSET strTest1
-	call String_startsWith_1
-	add esp, 12
-	mov [dReturnedVal],EAX	
-	
-	Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke intasc32, ADDR strOutput, dReturnedVal
-	Invoke putstring, ADDR strOutput
-	
-	ret 
-TestString_startsWith_1 endp
-
-TestString_startsWith_2 PROC USES EAX ECX ESI EDI
-	Invoke putString, ADDR strInfoStrStartsWith2
-
-	push OFFSET strTest3
-	push OFFSET strTest1
-	call String_startsWith_2
-	add esp, 8
-	mov [dReturnedVal],EAX	
-	
-	Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke intasc32, ADDR strOutput, dReturnedVal
-	Invoke putstring, ADDR strOutput
-
-	ret
-TestString_startsWith_2 endp
-
-TestString_endsWith PROC USES EAX ECX ESI EDI
-	Invoke putString, ADDR strInfoStrEndsWith 	
-
-	push OFFSET strTest3
-	push OFFSET strTest1
-	call String_endsWith
-	add esp, 8
-
-	mov [dReturnedVal],EAX		
-	Invoke putString, ADDR strNewline
-	Invoke putString, ADDR strNewline
-	Invoke intasc32, ADDR strOutput, dReturnedVal
-	Invoke putstring, ADDR strOutput
-	
-	ret
-TestString_endsWith endp
 
 COMMENT %
 *******************************************************************************************
