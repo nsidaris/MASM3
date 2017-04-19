@@ -1,10 +1,11 @@
 ;*************************************************************************************
 ; Program Name:  MASM3.asm
-; Programmer:    Brenden Kentera
+; Programmer:    Brenden Kentera, Nick Sidaris
 ; Class:         CS 3B
 ; Date:          April 16, 2017
 ; Purpose:
 ;        driver file for MASM3's String2.asm (tests String2 procedures)
+;	and String1.asm
 ;*************************************************************************************
 	.486										;X86 INSTRUCTION SET
 	.MODEL flat									;USE ABSOLUTE ADDRESSES
@@ -31,7 +32,17 @@
 	EXTERN String_replace:PROC
 	EXTERN String_lastIndexOf1:PROC
 	EXTERN String_lastIndexOf2:PROC
-	EXTERN String_lastIndexOf3:PROC	
+	EXTERN String_lastIndexOf3:PROC
+;Methods from string1.asm
+	Extern String_equals:PROC
+	EXTERN String_equalsIgnoreCase:PROC
+	EXTERN String_copy:PROC
+	EXTERN String_substring_1:PROC
+	EXTERN String_substring_2:PROC
+	EXTERN String_charAt:PROC
+	EXTERN String_startsWith_1:PROC
+	EXTERN String_startsWith_2:PROC
+	EXTERN String_endsWith:PROC
 		
 	.data
 ;Header messages
@@ -39,16 +50,14 @@ strHeader1 byte 10,9," Name: Brenden Kentera", 10, 13, 9, 0 ;ASCII characters fo
 strHeader2 byte      "Class: CS3B", 10, 13, 9, 0			;10 -> newline. 13 -> carriage return. 9 -> tab.
 strHeader3 byte      "  Lab: MASM3", 10, 13, 9, 0					
 strHeader4 byte      " Date: 4/10/2017", 10, 13, 0					
-
 ;Constant Value(s)
-;STR_MAX   = 79		;Max string length
-
+STR_MAX   = 79		;Max string length
 strVal1 byte "asdfghjkl",0	;initalizes strings
 strVal2 byte "qwertyuiop",0
 strVal3 byte "AsDfghJKl",0
 strVal4 byte "xcvbnmnbvcxz",0
-;strVal5 byte (STR_MAX + 1) dup(?)	;initalizes space for strings (copy strings) 
-;strVal6 byte (STR_MAX + 1) dup(?)
+strVal5 byte (STR_MAX + 1) dup(?)	;initalizes space for strings (copy strings) 
+strVal6 byte (STR_MAX + 1) dup(?)
 dResult dword ?	;used for integer results from external methods(gotten from eax)
 strResult byte 12 dup(?)	;used for outputing dResult as a string
 
@@ -60,16 +69,46 @@ strSearchVal1 byte "xcv",0	;test indexOf3, lastIndexOf3, and concat procedures
 strSearchVal2 byte "vcxz",0
 strSearchVal3 byte "Dfgh",0
 strSearchVal4 byte "dfgh",0
-
-strTest1 byte "wasd sawdwasdcxztwasd",0	;used for testing lastIndexOf3
+strLastIndexTest1 byte "wasd sawdwasdcxztwasd",0	;used for testing lastIndexOf3
 strSubTest1 byte "wasd",0
-
 strPromptExit byte 10,13,10,13,"Thank you for using my program!",10,13,0	;exit message for the program
 strLength byte 10,13,"Length of string: ",0
 strPosition byte 10,13,"Position of char in string: ",0
 strPosOfStr byte 10,13,"Position of the string: ",0
 strNewLine byte 10,13,0
 strMemFail byte 10,13,"couldn't allocate memory for string",0
+strBeforeReplace byte 10,13,"string before replace: ",0
+strAfterReplace byte 10,13,"string after replace: ",0
+strTestingStrLength byte 10,13, "String_lengh tests:",0
+strTestingStrIndex1 byte 10,13, "String_indexOf1 tests:",0
+strTestingStrIndex2 byte 10,13, "String_indexOf2 tests:",0
+strTestingStrIndex3 byte 10,13, "String_indexOf3 tests:",0
+strTestingStrToLower byte 10,13, "String_toLowerCase tests:",0
+strTestingStrToUpper byte 10,13, "String_toUppercase tests:",0
+strTestingStrReplace byte 10,13, "String_replace tests:",0
+strTestingStrConcat byte 10,13, "String_concat tests:",0
+strTestingStrLastIndex1 byte 10,13, "String_lastIndexOf1 tests:",0
+strTestingStrLastIndex2 byte 10,13, "String_lastIndexOf2 tests:",0
+strTestingStrLastIndex3 byte 10,13, "String_lastIndexOf3 tests:",0
+
+; String Constant TESTVALS
+strTest1            byte  "Golden", 0
+strTest2            byte  "gOlden", 0
+strTest3			byte "ens", 0
+strOutput           dword ?
+dIndex1             dword 1
+dIndex2				dword 1
+strInfoTestStrEquals 	byte	10,13,10,13,32,32,32,"Now testing the String_Equals Method",10,13
+strInfoTestEqualsIC	 	byte	10,13,10,13,32,32,32,"Now testing the String_EqualsIgnoreCase Method",10,13
+strInfoTestStrCopy	 	byte	10,13,10,13,32,32,32,"Now testing the String_Copy Method",10,13
+strInfoSubstr1		 	byte	10,13,10,13,32,32,32,"Now testing the String_substring_1 Method",10,13
+strInfoSubstr2		 	byte	10,13,10,13,32,32,32,"Now testing the String_substring_2 Method",10,13						
+strInfoTestStrCharAt 	byte	10,13,10,13,32,32,32,"Now testing the String_CharAt Method",10,13
+strInfoStrStartsWith1	byte	10,13,10,13,32,32,32,"Now testing the String_StartsWith_1Method",10,13
+strInfoStrStartsWith2 	byte 10,13,10,13,32,32,32,"Now testing the String_StartsWith_2 Method",10,13
+strInfoStrEndsWith 		byte 10,13,10,13,32,32,32,"Now testing the String_EndsWith Method",10,13
+dReturnedVal	dword	?						;Storage for returned value
+
 	.code
 _start:								 ;Entry point in program
 
@@ -79,28 +118,28 @@ _start:								 ;Entry point in program
 	INVOKE putstring, ADDR strHeader3
 	INVOKE putstring, ADDR strHeader4
 	
-;Run Tests
+;Test String1.asm procedures
 	call TestString_length
-	INVOKE putstring, ADDR strNewLine
 	call TestString_indexOf1
-	INVOKE putstring, ADDR strNewLine
 	call TestString_indexOf2
-	INVOKE putstring, ADDR strNewLine
 	call TestString_indexOf3	
-	INVOKE putstring, ADDR strNewLine
 	call TestString_toLowerCase
-	INVOKE putstring, ADDR strNewLine
 	call TestString_toUpperCase
-	INVOKE putstring, ADDR strNewLine
 	call TestString_replace
-	INVOKE putstring, ADDR strNewLine
 	call TestString_lastIndexOf1
-	INVOKE putstring, ADDR strNewLine
 	call TestString_lastIndexOf2
-	INVOKE putstring, ADDR strNewLine
 	call TestString_lastIndexOf3
-	INVOKE putstring, ADDR strNewLine
-	call TestString_concat			
+	call TestString_concat
+;Test String1.asm procedures
+	call TestString_equals
+	call TestString_equalsIgnoreCase
+	call TestString_copy
+	call TestString_substring_1
+	call TestString_substring_2
+	call TestString_charAt
+	call TestString_startsWith_1
+	call TestString_startsWith_2
+	call TestString_endsWith	
 	
 	call ExitProgram				 ;Displays exit message and invokes ExitProcess,0
 
@@ -117,6 +156,7 @@ COMMENT %
 ******************************************************************************************%
 ;Call method
 TestString_length PROC USES EAX ECX ESI EDI
+	invoke putstring, addr strTestingStrLength
 ;tests first string(asdfghjkl)
 	push OFFSET strVal1						;Pass Param1 (string)
 	call String_length						;Call method
@@ -163,6 +203,7 @@ COMMENT %
 * returns the location of the character in the string, -1 if it is not found in the string*
 ******************************************************************************************%
 TestString_indexOf1 proc USES EAX ECX ESI EDI
+	invoke putstring, addr strTestingStrIndex1
 ;string(asdfghjkl),char(a)
 	movsx ax, cSearchVal1	;makes byte a word, to push into stack
 	push ax					;pass param2 (char)
@@ -208,6 +249,7 @@ COMMENT %
 *	in the string or if the given position is out of bounds of the string				  *
 ******************************************************************************************%
 TestString_indexOf2 proc USES EAX ECX ESI EDI
+	invoke putstring, addr strTestingStrIndex2
 ;string(xcvbnmnbvcxz), char(x), index(5)
 	mov eax, 5				;set index(in eax)
 	push eax				;pass param3 (start position of search)
@@ -269,6 +311,42 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+;string(asdfghjkl), char(a), index(-1)	
+	mov eax, 1
+	push eax
+	movsx ax, cSearchVal1	
+	push ax					
+	push offset strVal1		
+	call String_indexOf2
+	add esp,10
+	mov dResult,EAX		
+	invoke intasc32, addr strResult, dResult
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
+;string(asdfghjkl), char(a), index(-100)	
+	mov eax, -100
+	push eax
+	movsx ax, cSearchVal1	
+	push ax					
+	push offset strVal1		
+	call String_indexOf2
+	add esp,10
+	mov dResult,EAX		
+	invoke intasc32, addr strResult, dResult
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
+;string(asdfghjkl), char(a), index(0)	
+	mov eax, 0
+	push eax
+	movsx ax, cSearchVal1	
+	push ax					
+	push offset strVal1		
+	call String_indexOf2
+	add esp,10
+	mov dResult,EAX		
+	invoke intasc32, addr strResult, dResult
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
 	
 	ret
 TestString_indexOf2 endp
@@ -282,6 +360,7 @@ COMMENT %
 * returns the location of the second/substring                                            *
 ******************************************************************************************%
 TestString_indexOf3 proc USES EAX ECX EDX ESI EDI 
+	invoke putstring, addr strTestingStrIndex3
 ;string(xcvbnmnbvcxz), substring(xcv)
 	push offset strSearchVal1	;pass param2 (substring)
 	push offset strVal4			;pass param1 (string)
@@ -300,6 +379,16 @@ TestString_indexOf3 proc USES EAX ECX EDX ESI EDI
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosOfStr
 	invoke putstring, addr strResult	
+;string(vcxz). substring(xcvbnmnbvcxz	
+	push offset strVal4
+	push offset strSearchVal2
+	call String_indexOf3
+	add esp,8 
+	mov dResult,EAX		
+	invoke intasc32, addr strResult, dResult
+	invoke putstring, addr strPosOfStr
+	invoke putstring, addr strResult
+	
 	
 	ret
 TestString_indexOf3 endp
@@ -313,6 +402,7 @@ COMMENT %
 * returns the string with all lowercase chars											  *
 ******************************************************************************************%
 TestString_toLowerCase proc USES EAX ECX EDX ESI EDI 
+	invoke putstring, addr strTestingStrToLower
 ;string(AsDfghJKl)
 	push offset strVal3			;pass param1 (string)
 	call String_toLowerCase
@@ -333,6 +423,7 @@ COMMENT %
 * returns the string with all uppercase chars											  *
 ******************************************************************************************%
 TestString_toUpperCase proc USES EAX ECX EDX ESI EDI 
+	invoke putstring, addr strTestingStrToUpper
 ;string(AsDfghJKl) [string(asdfghjkl) if called after toLowerCase]
 	push offset strVal3			;pass param1 (string)
 	call String_toUpperCase
@@ -354,7 +445,10 @@ COMMENT %
 * Replaces all instances of the oldChar with newChar									  *
 ******************************************************************************************%
 TestString_replace proc USES EAX ECX EDX ESI EDI 
+	invoke putstring, addr strTestingStrReplace
+	
 	invoke putstring, addr strNewLine
+	invoke putstring, addr strBeforeReplace
 	invoke putstring, addr strVal4			
 ;string(xcvbnmnbvcxz), char(x), char(a)
 	movsx ax, cSearchVal1	;pass param3 (char), new character	
@@ -364,10 +458,11 @@ TestString_replace proc USES EAX ECX EDX ESI EDI
 	push offset strVal4		;pass param1 (string)
 	call String_replace
 	add esp,8
-	invoke putstring, addr strNewLine
+	invoke putstring, addr strAfterReplace
 	invoke putstring, addr strVal4		
 	
 	invoke putstring, addr strNewLine
+	invoke putstring, addr strBeforeReplace
 	invoke putstring, addr strVal4
 ;string(xcvbnmnbvcxz), char(a), char(x)	
 ;undo changes to string
@@ -378,7 +473,7 @@ TestString_replace proc USES EAX ECX EDX ESI EDI
 	push offset strVal4		
 	call String_replace
 	add esp,8
-	invoke putstring, addr strNewLine
+	invoke putstring, addr strAfterReplace
 	invoke putstring, addr strVal4	
 
 	ret
@@ -394,6 +489,7 @@ COMMENT %
 * returns the location of the character in the string, -1 if it is not found in the string*
 ******************************************************************************************%
 TestString_lastIndexOf1 proc USES EAX ECX ESI EDI
+	invoke putstring, addr strTestingStrLastIndex1
 ;string(xcvbnmnbvcxz), char(x)
 	movsx ax, cSearchVal3	;makes byte a word for pushing to stack
 	push ax					;pass param2 (char)
@@ -419,6 +515,7 @@ COMMENT %
 *	in the string or if the given position is out of bounds of the string				  *
 ******************************************************************************************%
 TestString_lastIndexOf2 proc USES EAX ECX ESI EDI
+	invoke putstring, addr strTestingStrLastIndex2
 ;string(xcvbnmnbvcxz), char(x), index(5)
 	mov eax, 5
 	push eax				;pushes starting place for the search
@@ -467,6 +564,42 @@ TestString_lastIndexOf2 proc USES EAX ECX ESI EDI
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+;string(xcvbnmnbvcxz), char(x), index(0)	
+	mov eax, 0
+	push eax				
+	movsx ax, cSearchVal3	
+	push ax					
+	push offset strVal4		
+	call String_lastIndexOf2	
+	add esp,10				
+	mov dResult,EAX		
+	invoke intasc32, addr strResult, dResult
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
+;string(xcvbnmnbvcxz), char(x), index(-1)	
+	mov eax, -1
+	push eax				
+	movsx ax, cSearchVal3	
+	push ax					
+	push offset strVal4		
+	call String_lastIndexOf2	
+	add esp,10				
+	mov dResult,EAX		
+	invoke intasc32, addr strResult, dResult
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
+;string(xcvbnmnbvcxz), char(x), index(-100)	
+	mov eax, -100
+	push eax				
+	movsx ax, cSearchVal3	
+	push ax					
+	push offset strVal4		
+	call String_lastIndexOf2	
+	add esp,10				
+	mov dResult,EAX		
+	invoke intasc32, addr strResult, dResult
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
 	
 	ret
 TestString_lastIndexOf2 endp
@@ -481,38 +614,73 @@ COMMENT %
 * returns the location of the last substring in the string, -1 if is not found 			  *
 ******************************************************************************************%
 TestString_lastIndexOf3 proc USES EAX EBX ECX EDX ESI EDI
+	invoke putstring, addr strTestingStrLastIndex3
 ;string(sawdwasdcxztwasd), substring(wasd)
 	push offset strSubTest1		;pass param2 (string), substring
-	push offset strTest1		;pass param1 (string)
+	push offset strLastIndexTest1		;pass param1 (string)
 	call String_lastIndexOf3
 	add esp,8
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosOfStr
 	invoke putstring, addr strResult
-
+;string(wasd), substring(sawdwasdcxztwasd)
+	push offset strLastIndexTest1		;pass param2 (string), substring
+	push offset strSubTest1		;pass param1 (string), string
+	call String_lastIndexOf3
+	add esp,8
+	mov dResult,EAX		
+	invoke intasc32, addr strResult, dResult
+	invoke putstring, addr strPosOfStr
+	invoke putstring, addr strResult
+	
 	ret
 TestString_lastIndexOf3 endp
 
 COMMENT %
 *******************************************************************************************
 * Name:	TestString_concat                                                                 *
-* Purpose:			                                                          *
-*	test String_concat procedure							  *
-* passes 2 strings (lpString1:dword, lpString2:dword)					  *
-* returns address of new string (lpNewString:dword) in eax				  *
+* Purpose:			                                                                      *
+*	Tests the String_concat procedure, passes two strings and adds the second to the	  *
+* end of the first string																  *
 ******************************************************************************************%
 ;Call method
 TestString_concat PROC USES EAX EBX ECX EDX ESI EDI
+	invoke putstring, addr strTestingStrConcat
 ;string1(asdfghjkl), string2(qwertyuiop)	
 	push offset strVal2		;pass param2 (string)
 	push offset strVal1		;pass param1 (string)
 	call String_concat
 	add esp,8
-	
 	cmp eax,-1	;check if it couldn't allocate memory for new string
 	je memFail
-	
+	invoke putstring, addr strNewLine	
+	invoke putstring, eax			;outputs new string
+;2 empty strings	
+	push offset strVal5		;pass param2 (string)
+	push offset strVal6		;pass param1 (string)
+	call String_concat
+	add esp,8
+	cmp eax,-1	;check if it couldn't allocate memory for new string
+	je memFail
+	invoke putstring, addr strNewLine	
+	invoke putstring, eax			;outputs new string
+;empty string as 1st parameter
+	push offset strVal2		;pass param2 (string)
+	push offset strVal5		;pass param1 (string)
+	call String_concat
+	add esp,8
+	cmp eax,-1	;check if it couldn't allocate memory for new string
+	je memFail
+	invoke putstring, addr strNewLine	
+	invoke putstring, eax			;outputs new string
+;empty string as 2nd parameter
+	push offset strVal6		;pass param2 (string)
+	push offset strVal1		;pass param1 (string)
+	call String_concat
+	add esp,8
+	cmp eax,-1	;check if it couldn't allocate memory for new string
+	je memFail
 	invoke putstring, addr strNewLine	
 	invoke putstring, eax			;outputs new string
 	
@@ -523,11 +691,156 @@ exit:
 	ret
 TestString_concat endp
 
+TestString_equals PROC USES EAX ECX ESI EDI
+	Invoke putString , ADDR strInfoTestStrEquals
+	push OFFSET strTest2   ;push last parameter first 
+	push OFFSET strTest1
+	call String_equals
+	add ESP, 8
+	mov [dReturnedVal],EAX	
+	
+	;Invoke putString, EAX
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+	
+	ret
+TestString_equals ENDP
+
+TestString_equalsIgnoreCase PROC USES EAX ECX ESI EDI
+	Invoke putString , ADDR strInfoTestEqualsIC
+	push OFFSET strTest2   ;push last parameter first 
+	push OFFSET strTest1
+	call String_equalsIgnoreCase
+	add ESP, 8
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+	
+	ret
+TestString_equalsIgnoreCase ENDP
+
+TestString_copy PROC USES EAX ECX ESI EDI
+	Invoke putString, ADDR strInfoTestStrCopy
+	push OFFSET strTest1
+	call String_copy
+	add esp, 4
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke putString, EAX	
+	
+	ret
+TestString_copy ENDP
+
+TestString_substring_1 PROC USES EAX ECX ESI EDI
+	Invoke putString, ADDR strInfoSubstr1
+	push  dIndex2
+	push  dIndex1
+	push OFFSET strTest1
+	call String_subString_1
+	add esp, 12
+	
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke putString, EAX
+	
+	ret
+TestString_substring_1 ENDP
+
+TestString_substring_2 PROC USES EAX ECX ESI EDI
+	Invoke putString, ADDR strInfoSubstr2
+	push dIndex1
+	push OFFSET strTest1
+	call String_subString_2
+	add esp, 8
+	
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke putString, EAX
+
+	ret 
+TestString_substring_2 ENDP
+
+TestString_charAt PROC USES EAX ECX ESI EDI
+	Invoke putString, ADDR strInfoTestStrCharAt
+	push dIndex2
+	push OFFSET strTest1
+	call String_charAt
+	add esp, 8
+		Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke putString, EAX
+
+	ret
+TestString_charAt endp
+
+TestString_startsWith_1  PROC USES EAX ECX ESI EDI
+	Invoke putString, ADDR strInfoStrStartsWith1
+	
+	push dIndex1
+	push OFFSET strTest3
+	push OFFSET strTest1
+	call String_startsWith_1
+	add esp, 12
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+	
+	ret 
+TestString_startsWith_1 endp
+
+TestString_startsWith_2 PROC USES EAX ECX ESI EDI
+	Invoke putString, ADDR strInfoStrStartsWith2
+
+	push OFFSET strTest3
+	push OFFSET strTest1
+	call String_startsWith_2
+	add esp, 8
+	mov [dReturnedVal],EAX	
+	
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+
+	ret
+TestString_startsWith_2 endp
+
+TestString_endsWith PROC USES EAX ECX ESI EDI
+	Invoke putString, ADDR strInfoStrEndsWith 	
+
+	push OFFSET strTest3
+	push OFFSET strTest1
+	call String_endsWith
+	add esp, 8
+
+	mov [dReturnedVal],EAX		
+	Invoke putString, ADDR strNewline
+	Invoke putString, ADDR strNewline
+	Invoke intasc32, ADDR strOutput, dReturnedVal
+	Invoke putstring, ADDR strOutput
+	
+	ret
+TestString_endsWith endp
+
 COMMENT %
 *******************************************************************************************
 * Name:	ExitProgram                                                                       *
-* Purpose:			                                                          *
-*				Displays message and then invokes ExitProcess             *
+* Purpose:			                                                                      *
+*				Displays message and then invokes ExitProcess                             *
 ******************************************************************************************%
 ExitProgram PROC							;To exit the program...
 	INVOKE putstring, ADDR strPromptExit	;Display exit message to user
