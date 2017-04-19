@@ -25,7 +25,7 @@ dOffset   dword ?
 
 strTest1 byte 13,10,  "Parsing something for word 1", 13,10,  0
 strTest2 byte 13,10, "Parsing something for word 2", 13,10,  0
-
+strEmpty byte " ", 0
 	.code
 
 	
@@ -336,11 +336,19 @@ String_substring_1 proc Near32
 	push esi
 	push edx    ; new stack frame
 	
-
+	
 	
 	mov ebx, [ebp + 8] ; save string
 	mov edx, [ebp + 12] ;start index
 	mov ecx, [ebp + 16] ;end index
+	cmp ecx, edx
+	jl Invalid
+	push [ebp + 8]
+	call String_length
+	add esp, 4
+	cmp edx, eax
+	jg Invalid
+	
 	;make sure they are gud
 	add ecx, 1 ; account for the null char
 	sub ecx, edx ; ecx is the length of the substring
@@ -378,6 +386,16 @@ buildString:
 	pop ebp
 
 	ret
+	
+Invalid:
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+	mov eax, -1
+
+	ret
 String_substring_1 endp
 
 
@@ -396,7 +414,7 @@ String_substring_2 proc Near32
 	add esp, 4
 	;need to make sure start index is greater than length of the string
 	
-	
+
 	;use substring 1 to get the substring, use length of the string as teh 
 	push eax
 	push [ebp + 12]
@@ -413,6 +431,8 @@ String_substring_2 proc Near32
 
 	ret
 
+
+	
 String_substring_2 endp
 
 
@@ -427,7 +447,12 @@ String_charAt proc Near32
 	push esi
 	push edx    ; new stack frame
 	
-	
+	push [ebp +8]
+	call String_length
+	add esp, 4
+	mov edx, [ebp + 12]
+	cmp edx, eax
+	jg Invalid
 	
 	push [ebp + 12]
 	push [ebp + 12]
@@ -439,6 +464,17 @@ String_charAt proc Near32
 	
 	
 
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	ret
+	
+Invalid:
+
+	mov eax, -1
 	pop edx
 	pop esi ;restore registers
 	pop ecx
@@ -461,6 +497,13 @@ String_startsWith_1 proc Near32
 	push edx    ; new stack frame
 
 	mov ebx, [ebp + 16]  ;save start position
+	
+	push [ebp + 8]
+	call String_length
+	add esp, 4
+	cmp eax, ebx
+	jl Invalid
+	
 	push [ebp + 12] 
 	call String_length ; get length of the prefix
 
@@ -487,6 +530,19 @@ String_startsWith_1 proc Near32
 	
 	
 
+	pop edx
+	pop esi ;restore registers
+	pop ecx
+	pop ebx
+	pop ebp
+
+	ret
+	
+	
+	
+Invalid:
+
+	mov eax, -1
 	pop edx
 	pop esi ;restore registers
 	pop ecx

@@ -43,11 +43,11 @@ ENTER_KEY = 13				;value for the enter key
 
 ; String Constant TESTVALS
 strTest1            byte  "Golden", 0
-strTest2            byte  "gOlden", 0
-strTest3			byte "ens", 0
+strTest2            byte  "golden", 0
+strTest3			byte "en", 0
 strOutput           dword ?
 dIndex1             dword 1
-dIndex2				dword 1
+dIndex2				dword 100
 
 
 							;--- Insert test values here seperated with commas --- 
@@ -254,15 +254,17 @@ TestString_substring_1 PROC USES EAX ECX ESI EDI
 	push OFFSET strTest1
 	call String_subString_1
 	add esp, 12
-	
-	mov [dReturnedVal],EAX	
+
+	;mov [dReturnedVal],EAX	
 	
 	Invoke putString, ADDR strNewline
 	Invoke putString, ADDR strNewline
+	cmp eax, -1
+	je finish
 	Invoke putString, EAX
 	
 
-
+finish:
 	ret
 TestString_substring_1 ENDP
 
@@ -283,8 +285,10 @@ TestString_substring_2 PROC USES EAX ECX ESI EDI
 	
 	Invoke putString, ADDR strNewline
 	Invoke putString, ADDR strNewline
+	cmp eax, -1
+	je finish
 	Invoke putString, EAX
-
+finish:
 	ret 
 TestString_substring_2 ENDP
 
@@ -297,8 +301,10 @@ TestString_charAt PROC USES EAX ECX ESI EDI
 	add esp, 8
 		Invoke putString, ADDR strNewline
 	Invoke putString, ADDR strNewline
+	cmp eax, -1
+	je finish
 	Invoke putString, EAX
-
+	finish:
 	ret
 TestString_charAt endp
 
