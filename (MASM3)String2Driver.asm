@@ -22,7 +22,6 @@
 	hexToChar 	PROTO Near32 stdcall, lpDestStr:dword,lpSourceStr:dword,dLen:dword
 	
 ;Methods from string2.asm
-	EXTERN String_length:PROC
 	EXTERN String_indexOf1:PROC
 	EXTERN String_indexOf2:PROC
 	EXTERN String_indexOf3:PROC	
@@ -34,6 +33,7 @@
 	EXTERN String_lastIndexOf2:PROC
 	EXTERN String_lastIndexOf3:PROC
 ;Methods from string1.asm
+	EXTERN String_length:PROC
 	Extern String_equals:PROC
 	EXTERN String_equalsIgnoreCase:PROC
 	EXTERN String_copy:PROC
@@ -45,13 +45,13 @@
 	EXTERN String_endsWith:PROC
 		
 	.data
+;Constant Value(s)
+STR_MAX   = 79		;Max string length
 ;Header messages
 strHeader1 byte 10,9," Name: Brenden Kentera", 10, 13, 9, 0 ;ASCII characters for newline, carriage return, and tab
 strHeader2 byte      "Class: CS3B", 10, 13, 9, 0			;10 -> newline. 13 -> carriage return. 9 -> tab.
 strHeader3 byte      "  Lab: MASM3", 10, 13, 9, 0					
 strHeader4 byte      " Date: 4/10/2017", 10, 13, 0					
-;Constant Value(s)
-STR_MAX   = 79		;Max string length
 strVal1 byte "asdfghjkl",0	;initalizes strings
 strVal2 byte "qwertyuiop",0
 strVal3 byte "AsDfghJKl",0
@@ -60,7 +60,7 @@ strVal5 byte (STR_MAX + 1) dup(?)	;initalizes space for strings (copy strings)
 strVal6 byte (STR_MAX + 1) dup(?)
 dResult dword ?	;used for integer results from external methods(gotten from eax)
 strResult byte 12 dup(?)	;used for outputing dResult as a string
-
+strRandChars byte "!@#$%^&*()sdkjSEF?><:}{",0
 ;values for testing exrernal procedures
 cSearchVal1 byte 'a'	;used to test indexOf1/2, lastIndexOf1/2 and replace procedures
 cSearchVal2 byte 'u'
@@ -109,6 +109,24 @@ strInfoStrStartsWith2 	byte 10,13,10,13,32,32,32,"Now testing the String_StartsW
 strInfoStrEndsWith 		byte 10,13,10,13,32,32,32,"Now testing the String_EndsWith Method",10,13
 dReturnedVal	dword	?						;Storage for returned value
 
+strCat byte "cat",0
+strCat2 byte "CAT",0
+cVal1 byte 'c'
+cVal2 byte 'a'
+cVal3 byte 't'
+strMissi byte "Mississippi",0
+cVal4 byte 'i'
+cVal5 byte 'M'
+cVal6 byte 'e'
+strLastPos byte 10,13,"Last poisition of char in string: ",0
+strTestConcat byte 10,13,"String_concat: ",10,13,0
+strTestIndex byte 10,13,"String_indexOf1: ",10,13,0
+strTestLastIndex byte 10,13,"String_lastIndexOf1: ",10,13,0
+strTestReplace byte 10,13,"String_replace: ",10,13,0
+strTestToLower byte 10,13,"String_toLowerCase: ",10,13,0
+
+strEmpty byte " ",0
+
 	.code
 _start:								 ;Entry point in program
 
@@ -118,7 +136,7 @@ _start:								 ;Entry point in program
 	INVOKE putstring, ADDR strHeader3
 	INVOKE putstring, ADDR strHeader4
 	
-;Test String1.asm procedures
+;Test String2.asm procedures
 	call TestString_length
 	call TestString_indexOf1
 	call TestString_indexOf2
@@ -190,6 +208,7 @@ TestString_length PROC USES EAX ECX ESI EDI
 	invoke putstring, addr strLength		
 	invoke putstring, addr strResult	
 	
+	invoke putstring, addr strNewLine
 	ret									
 TestString_length ENDP
 
@@ -204,6 +223,55 @@ COMMENT %
 ******************************************************************************************%
 TestString_indexOf1 proc USES EAX ECX ESI EDI
 	invoke putstring, addr strTestingStrIndex1
+	
+	movsx ax, cSearchVal1
+	push ax
+	push offset strVal5
+	call String_indexOf1
+	add esp,6
+	cmp eax,-1
+	je skip1
+	mov dResult,EAX	
+	invoke intasc32, addr strResult, dResult	
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
+skip1:
+	movsx ax, cVal1
+	push ax
+	push offset strCat
+	call String_indexOf1
+	add esp,6
+	cmp eax,-1
+	je skip2
+	mov dResult,EAX	
+	invoke intasc32, addr strResult, dResult	
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
+skip2:
+	movsx ax, cVal2
+	push ax
+	push offset strCat
+	call String_indexOf1
+	add esp,6
+	cmp eax,-1
+	je skip3
+	mov dResult,EAX	
+	invoke intasc32, addr strResult, dResult	
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
+skip3:
+	movsx ax, cVal3
+	push ax
+	push offset strCat
+	call String_indexOf1
+	add esp,6
+	cmp eax,-1
+	je skip4
+	mov dResult,EAX	
+	invoke intasc32, addr strResult, dResult	
+	invoke putstring, addr strPosition
+	invoke putstring, addr strResult
+skip4:
 ;string(asdfghjkl),char(a)
 	movsx ax, cSearchVal1	;makes byte a word, to push into stack
 	push ax					;pass param2 (char)
@@ -235,6 +303,7 @@ TestString_indexOf1 proc USES EAX ECX ESI EDI
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
 	
+	invoke putstring, addr strNewLine
 	ret
 TestString_indexOf1 endp
 
@@ -257,11 +326,14 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	push ax					;pass param2 (char)
 	push offset strVal4		;pass param1 (string)
 	call String_indexOf2	
+	cmp eax,-1
+	je skip1
 	add esp,10				;repairs the stack
 	mov dResult,EAX								;outputs results
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+skip1:
 ;string(qwertyuiop), char(u), index(5)	
 	mov eax, 4
 	push eax
@@ -270,10 +342,14 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	push offset strVal2		
 	call String_indexOf2
 	add esp,10
+	cmp eax,-1
+	je skip2
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+	cmp eax,-1
+skip2:
 ;tests with string1
 ;string(asdfghjkl), char(a), index(13)
 	mov eax, 13
@@ -283,10 +359,13 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	push offset strVal1		
 	call String_indexOf2
 	add esp,10
+	cmp eax,-1
+	je skip3
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+skip3:
 ;string(asdfghjkl), char(a), index(0)
 	mov eax, 0
 	push eax
@@ -295,10 +374,13 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	push offset strVal1		
 	call String_indexOf2
 	add esp,10
+	cmp eax,-1
+	je skip4
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+skip4:
 ;string(asdfghjkl), char(a), index(1)	
 	mov eax, 1
 	push eax
@@ -307,10 +389,13 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	push offset strVal1		
 	call String_indexOf2
 	add esp,10
+	cmp eax,-1
+	je skip5
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+skip5:
 ;string(asdfghjkl), char(a), index(-1)	
 	mov eax, 1
 	push eax
@@ -319,10 +404,13 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	push offset strVal1		
 	call String_indexOf2
 	add esp,10
+	cmp eax,-1
+	je skip6
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+skip6:
 ;string(asdfghjkl), char(a), index(-100)	
 	mov eax, -100
 	push eax
@@ -331,10 +419,13 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	push offset strVal1		
 	call String_indexOf2
 	add esp,10
+	cmp eax,-1
+	je skip7
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+skip7:
 ;string(asdfghjkl), char(a), index(0)	
 	mov eax, 0
 	push eax
@@ -343,11 +434,14 @@ TestString_indexOf2 proc USES EAX ECX ESI EDI
 	push offset strVal1		
 	call String_indexOf2
 	add esp,10
+	cmp eax,-1
+	je skip8
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
-	
+skip8:
+	invoke putstring, addr strNewLine
 	ret
 TestString_indexOf2 endp
 
@@ -366,30 +460,38 @@ TestString_indexOf3 proc USES EAX ECX EDX ESI EDI
 	push offset strVal4			;pass param1 (string)
 	call String_indexOf3
 	add esp,8
+	cmp eax,-1
+	je skip1
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosOfStr
 	invoke putstring, addr strResult
+skip1:
 ;string(xcvbnmnbvcxz), substring(vcxz)	
 	push offset strSearchVal2
 	push offset strVal4
 	call String_indexOf3
 	add esp,8 
+	cmp eax,-1
+	je skip2
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosOfStr
 	invoke putstring, addr strResult	
+skip2:
 ;string(vcxz). substring(xcvbnmnbvcxz	
 	push offset strVal4
 	push offset strSearchVal2
 	call String_indexOf3
 	add esp,8 
+	cmp eax,-1
+	je skip3
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosOfStr
 	invoke putstring, addr strResult
-	
-	
+skip3:
+	invoke putstring, addr strNewLine
 	ret
 TestString_indexOf3 endp
 
@@ -403,14 +505,37 @@ COMMENT %
 ******************************************************************************************%
 TestString_toLowerCase proc USES EAX ECX EDX ESI EDI 
 	invoke putstring, addr strTestingStrToLower
+	
+	push offset strVal5
+	call String_toLowerCase
+	add esp,4		
+	;invoke putstring, addr strNewLine
+	invoke putstring, addr strVal3
+	push offset strVal3			;pass param1 (string)
+	call String_toLowerCase
+	add esp,4		
+	invoke putstring, addr strNewLine
+	invoke putstring, addr strCat
+	push offset strVal3			;pass param1 (string)
+	call String_toLowerCase
+	add esp,4		
+	invoke putstring, addr strNewLine
+	invoke putstring, addr strCat2
+	
 ;string(AsDfghJKl)
 	push offset strVal3			;pass param1 (string)
 	call String_toLowerCase
-	add esp,4	
-;string(asdfghjkl)	
+	add esp,4		
 	invoke putstring, addr strNewLine
-	invoke putstring, addr strVal3			
+	invoke putstring, addr strVal3
+;string(!@#$%^&*()sdkjSEF?><":}{)
+	push offset strRandChars			;pass param1 (string)
+	call String_toLowerCase
+	add esp,4		
+	invoke putstring, addr strNewLine
+	invoke putstring, addr strRandChars
 	
+	invoke putstring, addr strNewLine
 	ret
 TestString_toLowerCase endp
 
@@ -431,7 +556,14 @@ TestString_toUpperCase proc USES EAX ECX EDX ESI EDI
 ;string(ASDFGHJKL)	
 	invoke putstring, addr strNewLine
 	invoke putstring, addr strVal3		
+;string(!@#$%^&*()sdkjSEF?><":}{)
+	push offset strRandChars			;pass param1 (string)
+	call String_toUpperCase
+	add esp,4		
+	invoke putstring, addr strNewLine
+	invoke putstring, addr strRandChars
 	
+	invoke putstring, addr strNewLine
 	ret
 TestString_toUpperCase endp
 
@@ -445,7 +577,6 @@ COMMENT %
 * Replaces all instances of the oldChar with newChar									  *
 ******************************************************************************************%
 TestString_replace proc USES EAX ECX EDX ESI EDI 
-	invoke putstring, addr strTestingStrReplace
 	
 	invoke putstring, addr strNewLine
 	invoke putstring, addr strBeforeReplace
@@ -476,6 +607,7 @@ TestString_replace proc USES EAX ECX EDX ESI EDI
 	invoke putstring, addr strAfterReplace
 	invoke putstring, addr strVal4	
 
+	invoke putstring, addr strNewLine
 	ret
 TestString_replace endp
 
@@ -490,17 +622,57 @@ COMMENT %
 ******************************************************************************************%
 TestString_lastIndexOf1 proc USES EAX ECX ESI EDI
 	invoke putstring, addr strTestingStrLastIndex1
+
+	movsx ax, cVal4	
+	push ax					
+	push offset strMissi		
+	call String_lastIndexOf1	
+	add esp,6	
+	cmp eax,-1
+	je skip1
+	mov dResult,EAX			
+	invoke intasc32, addr strResult, dResult	
+	invoke putstring, addr strLastPos
+	invoke putstring, addr strResult
+skip1:
+	movsx ax, cVal5	
+	push ax					
+	push offset strMissi		
+	call String_lastIndexOf1	
+	add esp,6	
+	cmp eax,-1
+	je skip2
+	mov dResult,EAX			
+	invoke intasc32, addr strResult, dResult	
+	invoke putstring, addr strLastPos
+	invoke putstring, addr strResult
+skip2:	
+	movsx ax, cVal6	
+	push ax					
+	push offset strMissi		
+	call String_lastIndexOf1	
+	add esp,6	
+	cmp eax,-1
+	je skip3
+	mov dResult,EAX			
+	invoke intasc32, addr strResult, dResult	
+	invoke putstring, addr strLastPos
+	invoke putstring, addr strResult
+skip3:
 ;string(xcvbnmnbvcxz), char(x)
 	movsx ax, cSearchVal3	;makes byte a word for pushing to stack
 	push ax					;pass param2 (char)
 	push offset strVal4		;pass param1 (string
 	call String_lastIndexOf1	;call method
 	add esp,6				;repair stack	
+	cmp eax, -1
+	je skip4
 	mov dResult,EAX			;take result(stored in eax) and stores into var dResult
 	invoke intasc32, addr strResult, dResult	;outputs result
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
-	
+skip4:	
+	invoke putstring, addr strNewLine
 	ret
 TestString_lastIndexOf1 endp 
 
@@ -515,7 +687,7 @@ COMMENT %
 *	in the string or if the given position is out of bounds of the string				  *
 ******************************************************************************************%
 TestString_lastIndexOf2 proc USES EAX ECX ESI EDI
-	invoke putstring, addr strTestingStrLastIndex2
+	invoke putstring, addr strTestingStrLastIndex2	
 ;string(xcvbnmnbvcxz), char(x), index(5)
 	mov eax, 5
 	push eax				;pushes starting place for the search
@@ -524,10 +696,13 @@ TestString_lastIndexOf2 proc USES EAX ECX ESI EDI
 	push offset strVal4		;pushes the string
 	call String_lastIndexOf2	
 	add esp,10				;repairs the stack
+	cmp eax,-1
+	je skip1
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+skip1:
 ;string(xcvbnmnbvcxz), char(x), index(11)
 	mov eax, 11
 	push eax				
@@ -547,11 +722,14 @@ TestString_lastIndexOf2 proc USES EAX ECX ESI EDI
 	push ax					
 	push offset strVal4		
 	call String_lastIndexOf2	
-	add esp,10				
+	add esp,10		
+	cmp eax,-1
+	je skip2	
 	mov dResult,EAX		
 	invoke intasc32, addr strResult, dResult
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
+skip2:
 ;string(qwertyuiop), char(u), index(9)	
 	mov eax, 9
 	push eax				
@@ -601,6 +779,7 @@ TestString_lastIndexOf2 proc USES EAX ECX ESI EDI
 	invoke putstring, addr strPosition
 	invoke putstring, addr strResult
 	
+	invoke putstring, addr strNewLine
 	ret
 TestString_lastIndexOf2 endp
 
@@ -634,6 +813,7 @@ TestString_lastIndexOf3 proc USES EAX EBX ECX EDX ESI EDI
 	invoke putstring, addr strPosOfStr
 	invoke putstring, addr strResult
 	
+	invoke putstring, addr strNewLine
 	ret
 TestString_lastIndexOf3 endp
 
@@ -647,47 +827,84 @@ COMMENT %
 ;Call method
 TestString_concat PROC USES EAX EBX ECX EDX ESI EDI
 	invoke putstring, addr strTestingStrConcat
+	
+	push offset strVal5		
+	push offset strVal6		
+	call String_concat
+	add esp,8
+	cmp eax,-1	
+	je skip1
+	invoke putstring, addr strNewLine	
+	invoke putstring, eax
+skip1:
+	push offset strVal5		
+	push offset strCat		
+	call String_concat
+	add esp,8
+	cmp eax,-1	
+	je skip2
+	invoke putstring, addr strNewLine	
+	invoke putstring, eax
+skip2:
+	push offset strCat
+	push offset strVal5				
+	call String_concat
+	add esp,8
+	cmp eax,-1	
+	je skip3
+	invoke putstring, addr strNewLine	
+	invoke putstring, eax
+skip3:
+	push offset strCat
+	push offset strCat				
+	call String_concat
+	add esp,8
+	cmp eax,-1	
+	je skip4
+	invoke putstring, addr strNewLine	
+	invoke putstring, eax
+skip4:
 ;string1(asdfghjkl), string2(qwertyuiop)	
 	push offset strVal2		;pass param2 (string)
 	push offset strVal1		;pass param1 (string)
 	call String_concat
 	add esp,8
 	cmp eax,-1	;check if it couldn't allocate memory for new string
-	je memFail
+	je skip5
 	invoke putstring, addr strNewLine	
 	invoke putstring, eax			;outputs new string
+skip5:
 ;2 empty strings	
 	push offset strVal5		;pass param2 (string)
 	push offset strVal6		;pass param1 (string)
 	call String_concat
 	add esp,8
 	cmp eax,-1	;check if it couldn't allocate memory for new string
-	je memFail
+	je skip6
 	invoke putstring, addr strNewLine	
 	invoke putstring, eax			;outputs new string
+skip6:
 ;empty string as 1st parameter
 	push offset strVal2		;pass param2 (string)
 	push offset strVal5		;pass param1 (string)
 	call String_concat
 	add esp,8
 	cmp eax,-1	;check if it couldn't allocate memory for new string
-	je memFail
+	je skip7
 	invoke putstring, addr strNewLine	
 	invoke putstring, eax			;outputs new string
+skip7:
 ;empty string as 2nd parameter
 	push offset strVal6		;pass param2 (string)
 	push offset strVal1		;pass param1 (string)
 	call String_concat
 	add esp,8
 	cmp eax,-1	;check if it couldn't allocate memory for new string
-	je memFail
+	je skip8
 	invoke putstring, addr strNewLine	
 	invoke putstring, eax			;outputs new string
+skip8:
 	
-	jmp exit
-memFail:
-	invoke putstring, addr strMemFail
-exit:	
 	ret
 TestString_concat endp
 
