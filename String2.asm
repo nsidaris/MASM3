@@ -5,7 +5,7 @@
 ; Date:          April 16, 2017
 ; Purpose:
 ;        Define the methods for the String class:
-;	String_length, String_indexOf1, String_indexOf2, String_indexOf3
+;	(String_length,) String_indexOf1, String_indexOf2, String_indexOf3
 ;	String_lastIndexOf1, String_lastIndexOf2, String_lastIndexOf3, String_concat
 ;	String_replace, String_toLowerCase, String_toUpperCase
 ;*************************************************************************************
@@ -18,14 +18,15 @@
 	getstring	PROTO Near32 stdcall, lpStringToGet:dword, dlength:dword
 	putstring 	PROTO Near32 stdcall, lpStringToPrint:dword
 	memoryallocBailey PROTO Near32 stdcall, dNumBytes:dword  ;returns address ofmemory
-	;extern String_length:near32	
+
+	EXTERN String_length:near32 ;use string_length from string1.asm
 	
 	.data
 dVal1 dword ?
 dVal2 dword ?
 	.code
 	
-COMMENT %			;terminating symbol for the block is  								
+COMMENT %									
 *****************************************************************************************
 * Name: String_length									*
 * Purpose:										*
@@ -34,28 +35,27 @@ COMMENT %			;terminating symbol for the block is
 *   @param  lpString1:dword  								*
 *   @return length:dword  the length of a the string	                                *
 ****************************************************************************************%
-;COMMENT %
-String_length	proc Near32
-	push ebp					;preserve base register
-	mov ebp,esp					;set new stack frame
-	push ebx					;preserve used registers
-	push esi
-	
-	mov ebx,[ebp+8]				;ebx-> 1st string
-	mov esi,0					;esi indexes into the strings	
-stLoop:
-	cmp byte ptr[ebx+esi],0	;checks if it has reached the end of a string
-	je finished				;if yes, exit
-	inc esi					;if not, go to the next character
-	jmp stLoop				;loops until you hit a NULL character
-finished:
-	mov eax,esi					;returns the length in EAX
-	
-	pop esi			;restore preserved registers
-	pop ebx
-	pop ebp
-	RET
-String_length endp
+;commented out,(was used for initial testing) uses method from string1.asm to avoid conflicts
+;String_length	proc Near32
+;	push ebp					;preserve base register
+;	mov ebp,esp					;set new stack frame
+;	push ebx					;preserve used registers
+;	push esi
+;	
+;	mov ebx,[ebp+8]				;ebx-> 1st string
+;	mov esi,0					;esi indexes into the strings	
+;stLoop:
+;	cmp byte ptr[ebx+esi],0	;checks if it has reached the end of a string
+;	je finished				;if yes, exit
+;	inc esi					;if not, go to the next character
+;	jmp stLoop				;loops until you hit a NULL character
+;finished:
+;	mov eax,esi					;returns the length in EAX	
+;	pop esi			;restore preserved registers
+;	pop ebx
+;	pop ebp
+;	RET
+;String_length endp
 
 COMMENT %								
 *****************************************************************************************
@@ -122,6 +122,8 @@ String_indexOf2 proc Near32
 	
 	cmp esi, eax		;check if the index is within the strings length
 	jg charNotFound		;exits if index > length
+	cmp esi,0			;check if index is a negative value
+	jl charNotfound
 	
 	mov ax, [ebp+12]	;ax -> character
 stLoop:
@@ -405,6 +407,8 @@ String_lastIndexOf2 proc Near32
 	
 	cmp esi, ecx		;checks if given index is greater than the length of the string
 	jg charNotFound		;if index > length of string, exit
+	cmp esi,0			;check for negative index
+	jl charNotFound
 
 	mov ax, [ebp+12]	;ax -> character
 stLoop:
